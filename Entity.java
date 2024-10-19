@@ -1,8 +1,6 @@
 package DOM;
 
-enum CardinalDirections {
-    North, East, South, West
-};
+
 
 public class Entity {
     protected double coordX;             //координата по X

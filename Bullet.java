@@ -4,6 +4,7 @@ import static DOM.CardinalDirections.*;
 
 public class Bullet extends Entity{
 
+    public boolean active;
     private double finalCoordX; //конечная координата пули по X
     private double finalCoordY; //конечная координата пул по Y
 
@@ -15,6 +16,7 @@ public class Bullet extends Entity{
         this.finalCoordY = final_coord_Y;
         this.speed = entity_Speed;
         this.damage = entity_Damage;
+        this.active = false;
     }
 
     public Bullet(){
@@ -24,6 +26,7 @@ public class Bullet extends Entity{
         this.finalCoordY = -1;
         this.speed = 0.2;
         this.damage = 50;
+        this.active = false;
     }
 
     //получение координат точки назначения пули
@@ -41,26 +44,28 @@ public class Bullet extends Entity{
 
     //движение пули
     public int bulletMovment(){
+        if(active) {
+            double deltaX = finalCoordX - coordX;
+            double deltaY = finalCoordY - coordY;
 
-        double deltaX = finalCoordX - coordX;
-        double deltaY = finalCoordY - coordY;
-
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            // Движение по оси X
-            if (deltaX < 0) {
-                this.entityStep(North);
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Движение по оси X
+                if (deltaX < 0) {
+                    this.entityStep(North);
+                } else {
+                    this.entityStep(South);
+                }
             } else {
-                this.entityStep(South);
+                // Движение по оси Y
+                if (deltaY < 0) {
+                    this.entityStep(West);
+                } else {
+                    this.entityStep(East);
+                }
             }
-        } else {
-            // Движение по оси Y
-            if (deltaY < 0) {
-                this.entityStep(West);
-            } else {
-                this.entityStep(East);
-            }
+            return 0;
         }
-        return  0;
+        return 1;
     }
 
 
