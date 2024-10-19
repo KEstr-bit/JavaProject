@@ -34,13 +34,13 @@ public class Entity {
         return 1;
     }
 
-    public int getEntityCoord(int[] coord) {
+    public boolean getEntityCoord(int[] coord) {
         if (hitPoints > 0) {
             coord[0] = (int) coordX;
             coord[1] = (int) coordY;
-            return 0;
+            return false;
         }
-        return  1;
+        return  true;
     }
 
     public int getEntityDamage() {

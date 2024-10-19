@@ -16,7 +16,7 @@ public class Bullet extends Entity{
         this.finalCoordY = final_coord_Y;
         this.speed = entity_Speed;
         this.damage = entity_Damage;
-        this.active = false;
+        this.active = true;
     }
 
     public Bullet(){
@@ -26,7 +26,7 @@ public class Bullet extends Entity{
         this.finalCoordY = -1;
         this.speed = 0.2;
         this.damage = 50;
-        this.active = false;
+        this.active = true;
     }
 
     //получение координат точки назначения пули

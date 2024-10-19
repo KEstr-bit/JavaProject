@@ -22,7 +22,7 @@ public class Enemy extends Entity{
     }
 
 
-    public int enemyMovment(char[] world_Map, int map_Size_X, double player_X, double player_Y)
+    public int enemyMovment(char[][] world_Map, int map_Size_X, double player_X, double player_Y)
     {
         int[] enemyRoundXY;
         enemyRoundXY = new  int[2];
@@ -79,7 +79,7 @@ public class Enemy extends Entity{
         return 0;
     }
 
-    public boolean playersVision(char[] world_map, int map_Size_X, double player_X, double player_Y)
+    public boolean playersVision(char[][] world_map, int map_Size_X, double player_X, double player_Y)
     {
 
         double[] enemyXY = new double[2];

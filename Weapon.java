@@ -7,7 +7,7 @@ public abstract class Weapon {
     protected int bulletDamage;                   //урон, наносимы пулей
     protected int countActiveBullets;
 
-    public Bullet[] bullets;
+    public Bullet[] bullets = new Bullet[10];;
 
     public abstract boolean shot(double coord_X, double coord_Y, CardinalDirections shot_Direction);
 
@@ -37,9 +37,11 @@ public abstract class Weapon {
     }
 
     public int allBulletMovment(){
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < bulletCount; i++)
         {
-            bullets[i].bulletMovment();
+            if (bullets[i] != null) { // Check if bullet exists
+                bullets[i].bulletMovment();
+            }
         }
         return 0;
     }

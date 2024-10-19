@@ -52,7 +52,7 @@ public class Player extends Entity{
         return playerDirection;
     }
 
-    public int gamePlayerStep(char[] world_Map, int map_Size_X, CardinalDirections step_Direction){
+    public int gamePlayerStep(char[][] world_Map, int map_Size_X, CardinalDirections step_Direction){
         int fl = 0;
         if (hitPoints > 0)
         {
