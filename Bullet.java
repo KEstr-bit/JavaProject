@@ -5,8 +5,8 @@ import static DOM.CardinalDirections.*;
 public class Bullet extends Entity{
 
     public boolean active;
-    private double finalCoordX; //конечная координата пули по X
-    private double finalCoordY; //конечная координата пул по Y
+    private final double finalCoordX; //конечная координата пули по X
+    private final double finalCoordY; //конечная координата пул по Y
 
 
     public Bullet(double coord_X, double coord_Y, double final_coord_X, double final_coord_Y, int entity_Damage, double entity_Speed){
