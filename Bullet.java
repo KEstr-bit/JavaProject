@@ -1,5 +1,7 @@
 package DOM;
 
+import static DOM.CardinalDirections.*;
+
 public class Bullet extends Entity{
 
     private double finalCoordX; //конечная координата пули по X
@@ -46,16 +48,16 @@ public class Bullet extends Entity{
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
             // Движение по оси X
             if (deltaX < 0) {
-                this.entityStep(CardinalDirections.North);
+                this.entityStep(North);
             } else {
-                this.entityStep(CardinalDirections.South);
+                this.entityStep(South);
             }
         } else {
             // Движение по оси Y
             if (deltaY < 0) {
-                this.entityStep(CardinalDirections.West);
+                this.entityStep(West);
             } else {
-                this.entityStep(CardinalDirections.East);
+                this.entityStep(East);
             }
         }
         return  0;
