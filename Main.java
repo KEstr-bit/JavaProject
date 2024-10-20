@@ -15,12 +15,14 @@ public class Main {
         // Инициализация объектов
         game = new Game();
         map = new Map();
-        drawer = new Drawer();
+
         ending = new Final();
 
         // Создание массива для карты
         char[][] gameMap = new char[10][10];
         map.getWorldMap(gameMap); // Заполняем карту
+
+        drawer = new Drawer(gameMap);
 
         // Настройка ввода с клавиатуры
         java.awt.Frame frame = new java.awt.Frame();
@@ -75,7 +77,7 @@ public class Main {
             }
 
             // Отрисовка состояния игры
-            drawer.draw(gameMap, game);
+            drawer.updateMap(gameMap, game);
             try {
                 Thread.sleep(50); // Задержка для плавности
             } catch (InterruptedException _) {}

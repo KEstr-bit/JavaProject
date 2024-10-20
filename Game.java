@@ -38,87 +38,81 @@ public class Game {
 //если на карте есть пули первого оружия
         if (you.firstGun.getCountActiveBullets() > 0)
         {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < you.firstGun.bulletCount; i++) {
                 //если пуля существует
-                if (you.firstGun.bullets[i] != null) {
-                    if (you.firstGun.bullets[i].active) {
+                if (you.firstGun.bullets[i].active) {
 
-                        int[] bulletCoordXY = new int[2];
-                        int[] bulletFinalCoordXY = new int[2];
+                    int[] bulletCoordXY = new int[2];
+                    int[] bulletFinalCoordXY = new int[2];
 
-                        you.firstGun.bullets[i].getBulletCoords(bulletFinalCoordXY);
-                        you.firstGun.bullets[i].getEntityCoord(bulletCoordXY);
+                    you.firstGun.bullets[i].getBulletCoords(bulletFinalCoordXY);
+                    you.firstGun.bullets[i].getEntityCoord(bulletCoordXY);
 
 
-                        //если пуля столкнулась со стеной
-                        if (Utils.isWall(world_Map, 10, bulletCoordXY[0], bulletCoordXY[1])) {
+                    //если пуля столкнулась со стеной
+                    if (Utils.isWall(world_Map, 10, bulletCoordXY[0], bulletCoordXY[1])) {
+                        you.firstGun.bullets[i].active = false;
+                        you.firstGun.changeCountActiveBullets(-1);
+                    } else {
+
+                        //если пуля попала во врага
+
+                        if (bulletCoordXY[0] == monsterCoordXY[0] && bulletCoordXY[1] == monsterCoordXY[1] && monsterIsAlive) {
+
+                            monster.attackEntity(you.firstGun.bullets[i].getEntityDamage());
                             you.firstGun.bullets[i].active = false;
                             you.firstGun.changeCountActiveBullets(-1);
+
                         } else {
-
-                            //если пуля попала во врага
-
-                            if (bulletCoordXY[0] == monsterCoordXY[0] && bulletCoordXY[1] == monsterCoordXY[1] && monsterIsAlive) {
-
-                                monster.attackEntity(you.firstGun.bullets[i].getEntityDamage());
+                            //если пуля достигла своей конечной точки
+                            if (bulletCoordXY[0] == bulletFinalCoordXY[0] && bulletCoordXY[1] == bulletFinalCoordXY[1]) {
                                 you.firstGun.bullets[i].active = false;
                                 you.firstGun.changeCountActiveBullets(-1);
-
-                            } else {
-                                //если пуля достигла своей конечной точки
-                                if (bulletCoordXY[0] == bulletFinalCoordXY[0] && bulletCoordXY[1] == bulletFinalCoordXY[1]) {
-                                    you.firstGun.bullets[i].active = false;
-                                    you.firstGun.changeCountActiveBullets(-1);
-                                }
                             }
                         }
+
                     }
                 }
             }
         }
 
-        if (you.secondGun.getCountActiveBullets() > 0)
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                if (you.firstGun.bullets[i] != null) {
-                    //если пуля существует
-                    if (you.secondGun.bullets[i].active) {
+        if (you.secondGun.getCountActiveBullets() > 0) {
+            for (int i = 0; i < 10; i++) {
+                //если пуля существует
+                if (you.secondGun.bullets[i].active) {
 
-                        int[] bulletCoordXY = new int[2];
-                        int[] bulletFinalCoordXY = new int[2];
+                    int[] bulletCoordXY = new int[2];
+                    int[] bulletFinalCoordXY = new int[2];
 
-                        you.secondGun.bullets[i].getBulletCoords(bulletFinalCoordXY);
-                        you.secondGun.bullets[i].getEntityCoord(bulletCoordXY);
+                    you.secondGun.bullets[i].getBulletCoords(bulletFinalCoordXY);
+                    you.secondGun.bullets[i].getEntityCoord(bulletCoordXY);
 
 
-                        //если пуля столкнулась со стеной
-                        if (Utils.isWall(world_Map, 10, bulletCoordXY[0], bulletCoordXY[1])) {
+                    //если пуля столкнулась со стеной
+                    if (Utils.isWall(world_Map, 10, bulletCoordXY[0], bulletCoordXY[1])) {
+                        you.secondGun.bullets[i].active = false;
+                        you.secondGun.changeCountActiveBullets(-1);
+                    } else {
+
+                        //если пуля попала во врага
+
+                        if (bulletCoordXY[0] == monsterCoordXY[0] && bulletCoordXY[1] == monsterCoordXY[1] && monsterIsAlive) {
+
+                            monster.attackEntity(you.firstGun.bullets[i].getEntityDamage());
                             you.secondGun.bullets[i].active = false;
                             you.secondGun.changeCountActiveBullets(-1);
+
                         } else {
-
-                            //если пуля попала во врага
-
-                            if (bulletCoordXY[0] == monsterCoordXY[0] && bulletCoordXY[1] == monsterCoordXY[1] && monsterIsAlive) {
-
-                                monster.attackEntity(you.firstGun.bullets[i].getEntityDamage());
+                            //если пуля достигла своей конечной точки
+                            if (bulletCoordXY[0] == bulletFinalCoordXY[0] && bulletCoordXY[1] == bulletFinalCoordXY[1]) {
                                 you.secondGun.bullets[i].active = false;
                                 you.secondGun.changeCountActiveBullets(-1);
-
-                            } else {
-                                //если пуля достигла своей конечной точки
-                                if (bulletCoordXY[0] == bulletFinalCoordXY[0] && bulletCoordXY[1] == bulletFinalCoordXY[1]) {
-                                    you.secondGun.bullets[i].active = false;
-                                    you.secondGun.changeCountActiveBullets(-1);
-                                }
                             }
                         }
                     }
                 }
             }
         }
-
 
         return 0;
     }

@@ -20,25 +20,25 @@ public class Bullet extends Entity{
     }
 
     public Bullet(){
-        this.coordX = -1;
-        this.coordY = -1;
-        this.finalCoordX = -1;
-        this.finalCoordY = -1;
-        this.speed = 0.2;
-        this.damage = 50;
-        this.active = true;
+        this.coordX = 0;
+        this.coordY = 0;
+        this.finalCoordX = 0;
+        this.finalCoordY = 0;
+        this.speed = 0;
+        this.damage = 0;
+        this.active = false;
     }
 
     //получение координат точки назначения пули
     public int getBulletCoords(double[] final_coord){
-        final_coord[0] = coordX;
-        final_coord[1] = coordY;
+        final_coord[0] = finalCoordX;
+        final_coord[1] = finalCoordY;
         return 0;
     }
 
     public int getBulletCoords(int[] final_coord){
-        final_coord[0] = (int) coordX;
-        final_coord[1] = (int) coordY;
+        final_coord[0] = (int) Math.round(finalCoordX);
+        final_coord[1] = (int) Math.round(finalCoordY);
         return 0;
     }
 

@@ -17,6 +17,9 @@ public abstract class Weapon {
         bulletSpeed = bullet_Speed;
 
         countActiveBullets = 0;
+
+        for (int i = 0; i < bulletCount; i++)
+            bullets[i] = new Bullet();
     }
 
     public Weapon() {
@@ -25,6 +28,9 @@ public abstract class Weapon {
         bulletDamage = 50;
 
         countActiveBullets = 0;
+
+        for (int i = 0; i < bulletCount; i++)
+            bullets[i] = new Bullet();
     }
 
     //получит характеристики оружия

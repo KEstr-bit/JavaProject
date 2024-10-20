@@ -42,7 +42,6 @@ public class ShotGun extends Weapon{
                 sideShift += 1;
                 // инициализация пуль
                 bullets[i] = new Bullet(x, y, final_coord_X, final_coord_Y, bulletDamage, bulletSpeed);
-                bullets[i].active = true;
                 this.changeCountActiveBullets(1);
 
 

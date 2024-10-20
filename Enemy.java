@@ -99,7 +99,7 @@ public class Enemy extends Entity{
 
             distance = Utils.calcDistance(enemyXY[0], enemyXY[1], player_X, player_Y);
 
-            if ( Utils.isWall( world_map, map_Size_X, (int) enemyXY[0], (int) enemyXY[0] ) )
+            if ( Utils.isWall( world_map, map_Size_X, (int) enemyXY[0], (int) enemyXY[1] ) )
                 fl = false;
 
         }

@@ -36,8 +36,8 @@ public class Entity {
 
     public boolean getEntityCoord(int[] coord) {
         if (hitPoints > 0) {
-            coord[0] = (int) coordX;
-            coord[1] = (int) coordY;
+            coord[0] = (int) Math.round(coordX);
+            coord[1] = (int) Math.round(coordY);
             return false;
         }
         return  true;
