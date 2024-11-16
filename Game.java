@@ -1,119 +1,136 @@
 package DOM;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+
 
 public class Game {
-    public Player you; // Игрок
-    public Enemy monster; // Враг
+    public Player you;             // Игрок
+    public TexturePack tPack;     //хранилище текстур
+
+    Map<Integer, Entity> entities;
 
     public Game() {
-        // Инициализация игрока и врага
         you = new Player();
-        monster = new Enemy();
+        entities = new HashMap<>();
+
+        try {
+            tPack = new TexturePack();
+        } catch (Exception _) {
+            tPack = new TexturePack(1);
+        }
+
+        entities.put(Entity.lastID, new Enemy());
+        entities.put(Entity.lastID, new Enemy(1, 5, 0.01, 100, 50));
+    }
+
+    public void allEntityMovment(GameMap map)
+    {
+        double[] playerCoordXY = new double[2];
+        this.you.getEntityCoord(playerCoordXY);
+
+        Iterator<Map.Entry<Integer, Entity>> iterator = entities.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, Entity> entry = iterator.next();
+            Entity entity = entry.getValue();
+
+            if (entity.entityMovement(map, playerCoordXY[0], playerCoordXY[1])) {
+                // Удаление сущности из Map
+                iterator.remove(); // Используем метод iterator.remove() для корректного удаления
+            }
+        }
     }
 
     // Взаимодействие объектов
-    public int interaction(char[][] world_Map) {
+    public void interaction(GameMap map)
+    {
+        this.allEntityMovment(map);                    //движение всех лбъектов
 
-        this.you.firstGun.allBulletMovment();                    //движение пули
-        this.you.secondGun.allBulletMovment();                    //движение пули
+        int[] monsterCoordXY = new int[2];                               //координаты врагов
+        int[][] monstersMap = new int[GameMap.MAPSIZEX][GameMap.MAPSIZEY];  //карта id врагов
 
-        boolean monsterIsAlive = false;
-        int[] monsterCoordXY = new int[2];
-        if (!monster.getEntityCoord(monsterCoordXY))
-        {
-            monsterIsAlive = true;
+        for (int i = 0; i < GameMap.MAPSIZEX; i++) {
+            for (int j = 0; j < GameMap.MAPSIZEY; j++) {
+                monstersMap[i][j] = -1;
+            }
         }
 
-        int[] playerCoordXY= new int[2];
-        if (!you.getEntityCoord(playerCoordXY) && monsterIsAlive)
-        {
-            this.monster.enemyMovment(world_Map, 10, playerCoordXY[0], playerCoordXY[1]);     //движение врага
-            //если враг достиг игрока
-            if (monsterCoordXY[0] == playerCoordXY[0] && monsterCoordXY[1] == playerCoordXY[1])
-            {
-                you.attackEntity(monster.getEntityDamage());
+        // Запись координат врагов на карту
+        for (Map.Entry<Integer, Entity> entry : entities.entrySet()) {
+            if (entry.getValue() instanceof Enemy e) {
+
+                e.getEntityCoord(monsterCoordXY);
+                monstersMap[monsterCoordXY[0]][monsterCoordXY[1]] = entry.getKey();
             }
         }
 
 
-//если на карте есть пули первого оружия
-        if (you.firstGun.getCountActiveBullets() > 0)
+        int[] playerCoordXY = new int[2];
+        int id = -1;
+
+        //проверка столкновения игрока с врагом
+        if (!this.you.getEntityCoord(playerCoordXY))
+            id = monstersMap[playerCoordXY[0]][playerCoordXY[1]];
+
+        if (id != -1)
         {
-            for (int i = 0; i < you.firstGun.bulletCount; i++) {
-                //если пуля существует
-                if (you.firstGun.bullets[i].active) {
+            Entity e = entities.get(id);
+            this.you.attackEntity(e.getEntityDamage());
+        }
 
-                    int[] bulletCoordXY = new int[2];
-                    int[] bulletFinalCoordXY = new int[2];
+        //перебор пуль
+        for (Map.Entry<Integer, Entity> entry : entities.entrySet()) {
+            if (entry.getValue() instanceof Bullet b) {
+                int[] bulletCoordXY = new int[2];
 
-                    you.firstGun.bullets[i].getBulletCoords(bulletFinalCoordXY);
-                    you.firstGun.bullets[i].getEntityCoord(bulletCoordXY);
+                b.getEntityCoord(bulletCoordXY);
 
-
-                    //если пуля столкнулась со стеной
-                    if (Utils.isWall(world_Map, 10, bulletCoordXY[0], bulletCoordXY[1])) {
-                        you.firstGun.bullets[i].active = false;
-                        you.firstGun.changeCountActiveBullets(-1);
-                    } else {
-
-                        //если пуля попала во врага
-
-                        if (bulletCoordXY[0] == monsterCoordXY[0] && bulletCoordXY[1] == monsterCoordXY[1] && monsterIsAlive) {
-
-                            monster.attackEntity(you.firstGun.bullets[i].getEntityDamage());
-                            you.firstGun.bullets[i].active = false;
-                            you.firstGun.changeCountActiveBullets(-1);
-
-                        } else {
-                            //если пуля достигла своей конечной точки
-                            if (bulletCoordXY[0] == bulletFinalCoordXY[0] && bulletCoordXY[1] == bulletFinalCoordXY[1]) {
-                                you.firstGun.bullets[i].active = false;
-                                you.firstGun.changeCountActiveBullets(-1);
-                            }
-                        }
-
-                    }
+                //провекра столкновения пули с врагом
+                try {
+                    id = monstersMap[bulletCoordXY[0]][bulletCoordXY[1]];
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    id = -1;
                 }
+
+                if (id == -1)
+                    continue;
+
+                //поиск врага по id
+                Entity e = entities.get(id);
+
+                //нанесение урона врагу
+                e.attackEntity(b.getEntityDamage());
+
+                b.setRemLen(0);
+                break;
             }
+
         }
 
-        if (you.secondGun.getCountActiveBullets() > 0) {
-            for (int i = 0; i < 10; i++) {
-                //если пуля существует
-                if (you.secondGun.bullets[i].active) {
+    }
 
-                    int[] bulletCoordXY = new int[2];
-                    int[] bulletFinalCoordXY = new int[2];
+    public int getCountEntity() {
+        return  entities.size();
+    }
 
-                    you.secondGun.bullets[i].getBulletCoords(bulletFinalCoordXY);
-                    you.secondGun.bullets[i].getEntityCoord(bulletCoordXY);
+    public void playerShot()
+    {
+        you.shot(entities);
+    }
 
-
-                    //если пуля столкнулась со стеной
-                    if (Utils.isWall(world_Map, 10, bulletCoordXY[0], bulletCoordXY[1])) {
-                        you.secondGun.bullets[i].active = false;
-                        you.secondGun.changeCountActiveBullets(-1);
-                    } else {
-
-                        //если пуля попала во врага
-
-                        if (bulletCoordXY[0] == monsterCoordXY[0] && bulletCoordXY[1] == monsterCoordXY[1] && monsterIsAlive) {
-
-                            monster.attackEntity(you.firstGun.bullets[i].getEntityDamage());
-                            you.secondGun.bullets[i].active = false;
-                            you.secondGun.changeCountActiveBullets(-1);
-
-                        } else {
-                            //если пуля достигла своей конечной точки
-                            if (bulletCoordXY[0] == bulletFinalCoordXY[0] && bulletCoordXY[1] == bulletFinalCoordXY[1]) {
-                                you.secondGun.bullets[i].active = false;
-                                you.secondGun.changeCountActiveBullets(-1);
-                            }
-                        }
-                    }
-                }
+    public Entity getEntityByIndex(int index) {
+        if (index < 0 || index >= entities.size()) {
+            throw new IndexOutOfBoundsException("Index out of bounds");
+        }
+        Iterator<Entity> iterator = entities.values().iterator();
+        Entity entity = null;
+        for (int i = 0; i <= index; i++) {
+            if (iterator.hasNext()) {
+                entity = iterator.next();
+            } else {
+                throw new IndexOutOfBoundsException("Index out of bounds");
             }
         }
-
-        return 0;
+        return entity;
     }
 }

@@ -1,15 +1,16 @@
 package DOM;
 
-import static DOM.CardinalDirections.*;
-
 public class Enemy extends Entity{
-    Enemy(double coord_X, double coord_Y, double entity_Speed, int hit_Points, int entity_Damage)
+
+    public static final double VISSION_STEP = 0.2; //шаг луча взгляда
+
+    public Enemy(double coordX, double coordY, double speed, int hitPoints, int damage)
     {
-        damage = entity_Damage;
-        hitPoints = hit_Points;
-        coordX = coord_X;
-        coordY = coord_Y;
-        speed = entity_Speed;
+        this.damage = damage;
+        this.hitPoints = hitPoints;
+        this.coordX = coordX;
+        this.coordY = coordY;
+        this.speed = speed;
     }
 
     Enemy()
@@ -18,93 +19,53 @@ public class Enemy extends Entity{
         hitPoints = 100;
         coordX = 1;
         coordY = 8;
-        speed = 0.2;
+        speed = 0.02;
     }
 
-
-    public int enemyMovment(char[][] world_Map, int map_Size_X, double player_X, double player_Y)
+    @Override
+    public boolean entityMovement(GameMap map, double playerX, double playerY)
     {
-        int[] enemyRoundXY;
-        enemyRoundXY = new  int[2];
+        if (hitPoints <= 0)
+            return true;
 
-        this.getEntityCoord(enemyRoundXY);
+        double deltaX = playerX - this.coordX;
+        double deltaY = playerY - this.coordY;
 
-        double deltaX = player_X - coordX;
-        double deltaY = player_Y - coordY;
-
-        //если враг живой
-        if (hitPoints > 0)
+        //если враг видит игрока
+        if (playersVision(map, playerX, playerY))
         {
-            if (playersVision(world_Map, map_Size_X, player_X, player_Y))
-            {
-                if (Math.abs(deltaX) > Math.abs(deltaY))
-                {
-                    if (!Utils.isWall(world_Map, map_Size_X, enemyRoundXY[0] + 1, enemyRoundXY[1]) && deltaX > 0)
-                        this.entityStep(South);
-                else
-                    if (!Utils.isWall(world_Map, map_Size_X, enemyRoundXY[0] - 1, enemyRoundXY[1]) && deltaX < 0)
-                        this.entityStep(North);
-
-                }
-                else
-                {
-                    if (!Utils.isWall(world_Map, map_Size_X, enemyRoundXY[0], enemyRoundXY[1] - 1) && deltaY < 0)
-                        this.entityStep(West);
-                else
-                    if (!Utils.isWall(world_Map, map_Size_X, enemyRoundXY[0], enemyRoundXY[1] + 1) && deltaY > 0)
-                        this.entityStep(East);
-                }
-            }
-            else
-            {
-                switch (new java.util.Random().nextInt(10))
-                {
-                    case 0:
-                        if (!Utils.isWall(world_Map, map_Size_X, enemyRoundXY[0] + 1, enemyRoundXY[1]))
-                            this.entityStep(South); break;
-                    case 1:
-                        if (!Utils.isWall(world_Map, map_Size_X, enemyRoundXY[0] - 1, enemyRoundXY[1]))
-                            this.entityStep(North); break;
-                    case 2:
-                        if (!Utils.isWall(world_Map, map_Size_X, enemyRoundXY[0], enemyRoundXY[1] - 1))
-                            this.entityStep(West); break;
-                    case 3:
-                        if (!Utils.isWall(world_Map, map_Size_X, enemyRoundXY[0], enemyRoundXY[1] + 1))
-                            this.entityStep(East); break;
-                    default: break;
-                }
-            }
+            double distance = Utils.calcDistance(playerX, playerY, this.coordX, this.coordY);
+            double angleCos = deltaX / distance;
+            double angleSin = deltaY / distance;
+            this.viewAngle = Utils.radToDeg(Math.atan2(angleSin, angleCos));
+            this.entityMapStep(map);
         }
 
-        return 0;
+        return false;
     }
 
-    public boolean playersVision(char[][] world_map, int map_Size_X, double player_X, double player_Y)
+    public boolean playersVision(GameMap map, double playerX, double playerY)
     {
-
         double[] enemyXY = new double[2];
-
         this.getEntityCoord(enemyXY);
 
-        boolean fl = true;
-        double distance = Utils.calcDistance(coordX, coordY, player_X, player_Y);
+        boolean flVission = true;
+        double distance = Utils.calcDistance(enemyXY[0], enemyXY[1], playerX, playerY);
 
-        //проверка: видит ли враг игрока
-        while (distance > speed && fl)
+        //движение луча взгляда к игроку
+        while (distance > VISSION_STEP && flVission)
         {
+            enemyXY[0] = Utils.interpolateCoord(enemyXY[0], playerX, distance);
+            enemyXY[1] = Utils.interpolateCoord(enemyXY[1], playerY, distance);
 
+            distance = Utils.calcDistance(enemyXY[0], enemyXY[1], playerX, playerY);
 
-            enemyXY[0] = (0.2 * player_X + (distance - 0.2) * enemyXY[0]) / distance;
-            enemyXY[1] = (0.2 * player_Y + (distance - 0.2) * enemyXY[1]) / distance;
-
-            distance = Utils.calcDistance(enemyXY[0], enemyXY[1], player_X, player_Y);
-
-            if ( Utils.isWall( world_map, map_Size_X, (int) enemyXY[0], (int) enemyXY[1] ) )
-                fl = false;
-
+            //если луч столкнулся со стеной
+            if (map.isWall(enemyXY[0], enemyXY[1]))
+                flVission = false;
         }
 
-        return fl;
+        return flVission;
     }
 
 }

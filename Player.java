@@ -1,131 +1,126 @@
 package DOM;
 
-import static DOM.CardinalDirections.*;
-import static DOM.WeaponOption.AUTOMAT;
+import static DOM.WeaponOption.AUTOMATE;
 import static DOM.WeaponOption.SHOTGUN;
+import java.util.Map;
 
 public class Player extends Entity{
 
-    private CardinalDirections playerDirection;
     private WeaponOption activeWeapon;
 
-    public ShotGun firstGun;
-    public Automat secondGun;
+    public static final int VISION_SPEED = 1;  //скорость изменения угла обзора
+    public static final int FOV = 60;          //ширина обзора
+    public ShotGun firstGun;                    //оружие игрока1
+    public Automate secondGun;                 //оружие игрока2
 
-    public Player(double coord_X, double coord_Y, double entity_Speed, int hit_Points, int entity_Damage, CardinalDirections direction){
-        damage = entity_Damage;
-        hitPoints = hit_Points;
-        coordX = coord_X;
-        coordY = coord_Y;
-        speed = entity_Speed;
+    public Player(double coordX, double coordY, double speed, int hitPoints, int damage)
+    {
+        this.damage = damage;
+        this.hitPoints = hitPoints;
+        this.coordX = coordX;
+        this.coordY = coordY;
+        this.speed = speed;
 
-        playerDirection = direction;
         activeWeapon = SHOTGUN;
         firstGun = new ShotGun();
-        secondGun = new Automat();
+        secondGun = new Automate();
+
+        viewAngle = 0;
     }
 
     public Player(){
-        coordX = 8;
-        coordY = 1;
+        coordX = 7;
+        coordY = 2;
         hitPoints = 100;
-        speed = 1;
+        speed = 0.05;
         damage = 50;
 
-        playerDirection = North;
         activeWeapon = SHOTGUN;
         firstGun = new ShotGun();
-        secondGun = new Automat();
+        secondGun = new Automate();
+
+        viewAngle = 180;
     }
 
     //перемщение игрока
-    public int playerStep(CardinalDirections step_Direction){
+    public void playerMapStep(CardinalDirections stepDirection, GameMap map)
+    {
+        if (hitPoints <= 0)
+            return;
 
-        int i = 0;
-        playerDirection = step_Direction;
+        double oldAngle = viewAngle;
 
-        i = this.entityStep(step_Direction);
-        return i;
-    }
-    //получение координат игрока
-    public CardinalDirections getPlayerDirection(){
-        return playerDirection;
-    }
-
-    public int gamePlayerStep(char[][] world_Map, int map_Size_X, CardinalDirections step_Direction){
-        int fl = 0;
-        if (hitPoints > 0)
+        //изменение угла в зависимости от направления движения
+        switch (stepDirection)
         {
-            int[] roundXY = new int[2];
-            this.getEntityCoord(roundXY);
-
-
-            //изменение координат игрока в зависимости от направления
-            switch (step_Direction)
-            {
-                case North:
-                    if (!Utils.isWall(world_Map, map_Size_X, roundXY[0] - 1, roundXY[1])) {
-                        this.playerStep(North);
-                    }
-                    else {
-                        fl = 2;
-                    }
-                    break;
-                case East:
-                    if (!Utils.isWall(world_Map, map_Size_X, roundXY[0], roundXY[1] + 1)){
-                        this.playerStep(East);
-                    }
-                    else {
-                        fl = 2;
-                    }
-                    break;
-                case South:
-                    if (!Utils.isWall(world_Map, map_Size_X, roundXY[0] + 1, roundXY[1])) {
-                        this.playerStep(South);
-                    }
-                    else {
-                        fl = 2;
-                    }
-                    break;
-                case West:
-                    if (!Utils.isWall(world_Map, map_Size_X, roundXY[0], roundXY[1] - 1)) {
-                        this.playerStep(West);
-                    }
-                    else {
-                        fl = 2;
-                    }
-                    break;
-                default:
-                    fl = 1;
-            }
+            case East: viewAngle -= 90; break;
+            case South: viewAngle += 180; break;
+            case West: viewAngle += 90; break;
+            default: break;
         }
-        return fl;
+
+        this.entityMapStep(map);
+        //возвращение исходного угла
+        viewAngle = oldAngle;
+
+
     }
 
-    public WeaponOption changeActiveWeapon(){
+    public void changeActiveWeapon(){
         switch (activeWeapon)
         {
             case SHOTGUN:
-                activeWeapon = AUTOMAT;
+                activeWeapon = AUTOMATE;
                 break;
-            case AUTOMAT:
+            case AUTOMATE:
                 activeWeapon = SHOTGUN;
                 break;
         }
-        return activeWeapon;
     }
 
-    public WeaponOption shot(){
+    public void shot(Map<Integer, Entity> entiyes)
+    {
         switch (activeWeapon)
         {
             case SHOTGUN:
-                this.firstGun.shot(coordX, coordY, playerDirection);
+                this.firstGun.shot(coordX, coordY, viewAngle, entiyes);
                 break;
-            case AUTOMAT:
-                this.secondGun.shot(coordX, coordY, playerDirection);
+            case AUTOMATE:
+                this.secondGun.shot(coordX, coordY, viewAngle, entiyes);
                 break;
         }
 
-        return activeWeapon;
+    }
+
+    public void changeVision(CardinalDirections direct)
+    {
+        switch (direct)
+        {
+            case East:
+                viewAngle -= VISION_SPEED;
+                break;
+            case West:
+                viewAngle += VISION_SPEED;
+                break;
+            default:
+                break;
+        }
+
+        if (viewAngle > 360)
+        {
+            viewAngle -= 360;
+        }
+
+        if (viewAngle < 0)
+        {
+            viewAngle += 360;
+        }
+
+    }
+
+    @Override
+    public boolean entityMovement(GameMap map, double playerX, double playerY)
+    {
+        return false;
     }
 }

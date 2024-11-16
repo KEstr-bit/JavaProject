@@ -1,46 +1,54 @@
 package DOM;
 
 
+import static DOM.TextureType.Enemy1;
 
-public class Entity {
+public abstract class Entity {
     protected double coordX;             //координата по X
     protected double coordY;             //координата по Y
     protected int hitPoints;             //очки здоровья
     protected int damage;                 //урон наносимый
     protected double speed;               //скорость
+    protected double viewAngle;          //угол обзора
+    protected  double size;               //размер
+    protected TextureType texture;       //текстура
 
-    public Entity(double coord_X, double coord_Y, double entity_Speed, int hit_Points, int entity_Damage) {
-        this.coordX = coord_X;
-        this.coordY = coord_Y;
-        this.speed = entity_Speed;
-        this.hitPoints = hit_Points;
-        this.damage = entity_Damage;
+    public static int lastID = 0;             //последний записанный id
+
+    public Entity(double coordX, double coordY, double speed, int hitPoints, int damage, TextureType texture) {
+        this.damage = damage;
+        this.hitPoints = hitPoints;
+        this.coordX = coordX;
+        this.coordY = coordY;
+        this.speed = speed;
+        this.texture = texture;
+        viewAngle = 0;
+        lastID++;
+        size = 1;
     }
 
     public Entity() {
-        this.coordX = 8;
-        this.coordY = 1;
-        this.hitPoints = 100;
-        this.speed = 1;
-        this.damage = 50;
+        coordX = 8;
+        coordY = 1;
+        hitPoints = 100;
+        speed = 1;
+        damage = 50;
+        viewAngle = 0;
+        lastID++;
+        size = 1;
+        texture = Enemy1;
     }
 
-    public int getEntityCoord(double[] coord) {
-        if (hitPoints > 0) {
-            coord[0] = coordX;
-            coord[1] = coordY;
-            return 0;
-        }
-        return 1;
+    public boolean getEntityCoord(double[] coord) {
+        coord[0] = coordX;
+        coord[1] = coordY;
+        return hitPoints <= 0;
     }
 
     public boolean getEntityCoord(int[] coord) {
-        if (hitPoints > 0) {
-            coord[0] = (int) Math.round(coordX);
-            coord[1] = (int) Math.round(coordY);
-            return false;
-        }
-        return  true;
+        coord[0] = (int) Math.round(coordX);
+        coord[1] = (int) Math.round(coordY);
+        return hitPoints <= 0;
     }
 
     public int getEntityDamage() {
@@ -51,34 +59,75 @@ public class Entity {
         return hitPoints;
     }
 
+    public double getEntityAngle()
+    {
+        return viewAngle;
+    }
+
     // Метод атаки сущности
-    public int attackEntity(int entity_Damage) {
+    public boolean attackEntity(int entity_Damage) {
         if (hitPoints > 0) {
             hitPoints -= entity_Damage;
-            return 0; // Успешная атака
+            return false; // Успешная атака
         } else {
-            return 1; // Сущность не может быть атакована, так как здоровье равно или меньше 0
+            return true; // Сущность не может быть атакована, так как здоровье равно или меньше 0
         }
     }
 
-    public int entityStep(CardinalDirections step_Direction) {
-        // Здесь вы можете определить логику перемещения в зависимости от направления
+    public boolean entityStep() {
+
         if (hitPoints > 0)
         {
-            int i = 0;
-            switch (step_Direction)
-            {
-                case North: coordX -= speed; break;
-                case East: coordY += speed; break;
-                case South: coordX += speed; break;
-                case West: coordY -= speed; break;
-                default: i = 1;
-            }
-
-            return i;
+            coordX += Utils.projectionToX(speed, Utils.degToRad(viewAngle));
+            coordY += Utils.projectionToY(speed, Utils.degToRad(viewAngle));
+            return false;
         }
-        return 2;
+        return true;
     }
 
-};
+    public void entityMapStep(GameMap map)
+    {
+        double[] oldXY = new double[2];
+        this.getEntityCoord(oldXY);
+
+        this.entityStep();
+
+        //если объект шагнул в стену
+        if (map.isWall(this.coordX, this.coordY))
+        {
+            double deltaX = this.coordX - oldXY[0];
+            double deltaY = this.coordY - oldXY[1];
+
+            //если можно продолжить движение по оси X
+            if (!map.isWall(oldXY[0] + deltaX, oldXY[1]))
+            {
+                this.coordX = oldXY[0] + deltaX;
+                this.coordY = oldXY[1];
+            }
+            //если можно продолжить движение по оси Y
+            else if (!map.isWall(oldXY[0], oldXY[1] + deltaY))
+            {
+                this.coordX = oldXY[0];
+                this.coordY = oldXY[1] + deltaY;
+            }
+            else
+            {
+                this.coordX = oldXY[0];
+                this.coordY = oldXY[1];
+            }
+        }
+    }
+
+    public double getSize()
+    {
+        return size;
+    }
+
+    public TextureType getTextureType()
+    {
+        return texture;
+    }
+
+    abstract public boolean entityMovement(GameMap map, double playerX, double playerY);
+}
 

@@ -1,72 +1,75 @@
 package DOM;
 
-import static DOM.CardinalDirections.*;
+import static DOM.TextureType.Bullet1;
 
-public class Bullet extends Entity{
+public class Bullet extends Entity {
 
-    public boolean active;
-    private final double finalCoordX; //конечная координата пули по X
-    private final double finalCoordY; //конечная координата пул по Y
+    private double remainLen;   //оставшаяся длина пути
 
-
-    public Bullet(double coord_X, double coord_Y, double final_coord_X, double final_coord_Y, int entity_Damage, double entity_Speed){
-        this.coordX = coord_X;
-        this.coordY = coord_Y;
-        this.finalCoordX = final_coord_X;
-        this.finalCoordY = final_coord_Y;
-        this.speed = entity_Speed;
-        this.damage = entity_Damage;
-        this.active = true;
+    public Bullet(Bullet b) {
+        this.coordX = b.coordX;
+        this.coordY = b.coordY;
+        this.speed = b.speed;
+        this.damage = b.damage;
+        this.texture = b.texture;
+        this.viewAngle = b.viewAngle;
+        this.remainLen = b.remainLen;
+        this.size = b.size;
     }
 
-    public Bullet(){
-        this.coordX = 0;
-        this.coordY = 0;
-        this.finalCoordX = 0;
-        this.finalCoordY = 0;
-        this.speed = 0;
-        this.damage = 0;
-        this.active = false;
+    public Bullet(double coordX, double coordY, double flightAngle, int damage, double speed, TextureType texture) {
+        this.coordX = coordX;
+        this.coordY = coordY;
+        this.speed = speed;
+        this.damage = damage;
+        this.texture = texture;
+        viewAngle = flightAngle;
+        remainLen = 10;
+        size = 0.2;
     }
 
-    //получение координат точки назначения пули
-    public int getBulletCoords(double[] final_coord){
-        final_coord[0] = finalCoordX;
-        final_coord[1] = finalCoordY;
-        return 0;
+    public Bullet(double coordX, double coordY, double flightAngle, int damage, double speed) {
+        this.coordX = coordX;
+        this.coordY = coordY;
+        this.speed = speed;
+        this.damage = damage;
+        viewAngle = flightAngle;
+        remainLen = 10;
+        size = 0.2;
+        texture = Bullet1;
     }
 
-    public int getBulletCoords(int[] final_coord){
-        final_coord[0] = (int) Math.round(finalCoordX);
-        final_coord[1] = (int) Math.round(finalCoordY);
-        return 0;
+    public Bullet() {
+        coordX = 8;
+        coordY = 1;
+        speed = 0.2;
+        damage = 50;
+        viewAngle = 90;
+        remainLen = 10;
+        size = 0.2;
+        texture = Bullet1;
     }
 
-    //движение пули
-    public int bulletMovment(){
-        if(active) {
-            double deltaX = finalCoordX - coordX;
-            double deltaY = finalCoordY - coordY;
+    @Override
+    public boolean entityMovement(GameMap map, double playerX, double playerY) {
+        if (remainLen <= 0)
+            return true;
 
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                // Движение по оси X
-                if (deltaX < 0) {
-                    this.entityStep(North);
-                } else {
-                    this.entityStep(South);
-                }
-            } else {
-                // Движение по оси Y
-                if (deltaY < 0) {
-                    this.entityStep(West);
-                } else {
-                    this.entityStep(East);
-                }
-            }
-            return 0;
+        //уменьшение оставшегося пути при успешном движении
+        if (!this.entityStep())
+            remainLen -= speed;
+
+        //если пуля врезалась в стену
+        if (map.isWall(coordX, coordY)) {
+            remainLen = 0;
         }
-        return 1;
+
+        return false;
     }
 
-
+    public void setRemLen(double len) {
+        remainLen = len;
+    }
 }
+
+
