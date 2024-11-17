@@ -45,9 +45,6 @@ public class Player extends Entity{
     //перемщение игрока
     public void playerMapStep(CardinalDirections stepDirection, GameMap map)
     {
-        if (hitPoints <= 0)
-            return;
-
         double oldAngle = viewAngle;
 
         //изменение угла в зависимости от направления движения

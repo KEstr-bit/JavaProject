@@ -31,7 +31,6 @@ public class Main {
         RenderWindow window = new RenderWindow(new VideoMode(Drawer.SCREEN_WIDTH, Drawer.SCREEN_HEIGHT), "Graphic Test");
 
         boolean endFl = false;         //флажок работы игры
-        boolean resProcFl = true;
         boolean shotfl = true;
         boolean swapfl = true;
 

@@ -17,7 +17,7 @@ public class TexturePack {
                 textures[i].loadFromImage(img);
             }
             catch (Exception _) {
-                throw new Exception("Не удалось загрузить DOM/image" + i + ".png");
+                throw new Exception("Не удалось загрузить image" + i + ".png");
             }
         }
     }

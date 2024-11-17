@@ -20,7 +20,7 @@ public class Drawer {
         Arrays.fill(mas, 0);
     }
 
-    public void drawVerticalSegment(RenderWindow window, float length, float width, float x, float y, Color color) {
+   private void drawVerticalSegment(RenderWindow window, float length, float width, float x, float y, Color color) {
         //вертикальный отрезок
         RectangleShape segment = new RectangleShape(new Vector2f(width, length));
 
@@ -33,7 +33,7 @@ public class Drawer {
         window.draw(segment);
     }
 
-    public void drawImage(RenderWindow window, final Texture texture, float x, float y, float width, float height) {
+    private void drawImage(RenderWindow window, final Texture texture, float x, float y, float width, float height) {
         // Создаем спрайт и устанавливаем текстуру
         Sprite sprite = new Sprite();
         sprite.setTexture(texture);
@@ -50,7 +50,7 @@ public class Drawer {
         window.draw(sprite);
     }
 
-    public void dependSorting(Vector<Double> mainMas, Vector<Entity> sideMas, int left, int right) {
+    private void dependSorting(Vector<Double> mainMas, Vector<Entity> sideMas, int left, int right) {
         //Указатели в начало и в конец массива
         int i = left, j = right;
 

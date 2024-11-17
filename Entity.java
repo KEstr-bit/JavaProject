@@ -75,14 +75,9 @@ public abstract class Entity {
     }
 
     public boolean entityStep() {
-
-        if (hitPoints > 0)
-        {
-            coordX += Utils.projectionToX(speed, Utils.degToRad(viewAngle));
-            coordY += Utils.projectionToY(speed, Utils.degToRad(viewAngle));
-            return false;
-        }
-        return true;
+        coordX += Utils.projectionToX(speed, Utils.degToRad(viewAngle));
+        coordY += Utils.projectionToY(speed, Utils.degToRad(viewAngle));
+        return hitPoints <= 0;
     }
 
     public void entityMapStep(GameMap map)
