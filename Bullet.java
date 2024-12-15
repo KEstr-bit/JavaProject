@@ -1,75 +1,38 @@
 package DOM;
 
-import static DOM.TextureType.Bullet1;
+import java.util.Vector;
+
+import static DOM.TextureType.BULLET;
 
 public class Bullet extends Entity {
 
-    private double remainLen;   //оставшаяся длина пути
 
-    public Bullet(Bullet b) {
-        this.coordX = b.coordX;
-        this.coordY = b.coordY;
-        this.speed = b.speed;
-        this.damage = b.damage;
-        this.texture = b.texture;
-        this.viewAngle = b.viewAngle;
-        this.remainLen = b.remainLen;
-        this.size = b.size;
-    }
-
-    public Bullet(double coordX, double coordY, double flightAngle, int damage, double speed, TextureType texture) {
-        this.coordX = coordX;
-        this.coordY = coordY;
-        this.speed = speed;
-        this.damage = damage;
-        this.texture = texture;
-        viewAngle = flightAngle;
-        remainLen = 10;
-        size = 0.2;
-    }
-
-    public Bullet(double coordX, double coordY, double flightAngle, int damage, double speed) {
-        this.coordX = coordX;
-        this.coordY = coordY;
-        this.speed = speed;
-        this.damage = damage;
-        viewAngle = flightAngle;
-        remainLen = 10;
-        size = 0.2;
-        texture = Bullet1;
-    }
-
-    public Bullet() {
-        coordX = 8;
-        coordY = 1;
-        speed = 0.2;
-        damage = 50;
-        viewAngle = 90;
-        remainLen = 10;
-        size = 0.2;
-        texture = Bullet1;
+    public Bullet(double cordX, double cordY, double flightAngle, double speed, double hitPoints, double damage, TextureType texture, boolean friendly)
+    {
+        super(cordX, cordY, speed, hitPoints, damage, 0.5 ,texture, friendly);
+        this.viewAngle = flightAngle;
     }
 
     @Override
-    public boolean entityMovement(GameMap map, double playerX, double playerY) {
-        if (remainLen <= 0)
+    public boolean update(GameMap map, Vector<Entity> entities) {
+        updateAnimation();
+
+        if (eventFl)
+            return false;
+
+        if(!isAlive())
             return true;
 
-        //уменьшение оставшегося пути при успешном движении
-        if (!this.entityStep())
-            remainLen -= speed;
+        baseStep();
+        hitPoints -= speed;
 
-        //если пуля врезалась в стену
-        if (map.isWall(coordX, coordY)) {
-            remainLen = 0;
-        }
+//если пуля врезалась в стену
+        if (map.isWall(cordX, cordY))
+            kill();
 
         return false;
     }
 
-    public void setRemLen(double len) {
-        remainLen = len;
-    }
 }
 
 

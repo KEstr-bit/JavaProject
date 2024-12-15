@@ -1,6 +1,5 @@
 package DOM;
 
 public enum WeaponOption {
-    SHOTGUN,
-    AUTOMATE
+    GUN_SHOTGUN, GUN_RIFLE
 }

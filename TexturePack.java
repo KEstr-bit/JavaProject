@@ -4,7 +4,9 @@ import org.jsfml.graphics.Image;
 import org.jsfml.graphics.Texture;
 
 public class TexturePack {
+
     private final Texture[] textures = new Texture[TextureType.values().length];
+    static int FRAMES_COUNT = 8;
 
     public TexturePack() throws Exception {
 

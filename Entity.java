@@ -1,128 +1,187 @@
 package DOM;
 
 
-import static DOM.TextureType.Enemy1;
+import java.util.Vector;
 
-public abstract class Entity {
-    protected double coordX;             //координата по X
-    protected double coordY;             //координата по Y
-    protected int hitPoints;             //очки здоровья
-    protected int damage;                 //урон наносимый
-    protected double speed;               //скорость
-    protected double viewAngle;          //угол обзора
-    protected  double size;               //размер
-    protected TextureType texture;       //текстура
+import static DOM.Animations.*;
 
-    public static int lastID = 0;             //последний записанный id
+public abstract class Entity implements AnimationControl {
+    public final TextureType texture;
+    public final double size;
+    protected double cordX;
+    protected double cordY;
+    protected double hitPoints;
+    protected double damage;
+    protected double speed;
+    protected double viewAngle;
+    protected boolean friendly;
+    protected boolean eventFl = false;
+    protected float frame = 0;
+    protected Animations animation = ANIM_SPAWN;
 
-    public Entity(double coordX, double coordY, double speed, int hitPoints, int damage, TextureType texture) {
+    public void startAnimation(Animations animation)
+    {
+        frame = 0;
+        this.animation = animation;
+        eventFl = true;
+    }
+
+    public Animations getAnimation()
+    {
+        return this.animation;
+    }
+
+    public int getFrame()
+    {
+        return (int)(Math.round(this.frame));
+    }
+
+    public void updateAnimation()
+    {
+        frame += FRAME_SPEED;
+        if (Math.round(frame) >= TexturePack.FRAMES_COUNT)
+        {
+            frame = 0;
+            animation = ANIM_BASE;
+            eventFl = false;
+        }
+    }
+
+    protected void baseStep() {
+        cordX += Utils.projectToX(speed, Utils.degToRad(viewAngle));
+        cordY += Utils.projectToY(speed, Utils.degToRad(viewAngle));
+    }
+
+    public Entity(double cordX, double cordY, double speed, double hitPoints,
+                  double damage, double size, TextureType texture, boolean friendly)
+    {
+        this.cordX = cordX;
+        this.cordY = cordY;
+        this.speed = speed;
         this.damage = damage;
         this.hitPoints = hitPoints;
-        this.coordX = coordX;
-        this.coordY = coordY;
-        this.speed = speed;
+        this.friendly = friendly;
         this.texture = texture;
-        viewAngle = 0;
-        lastID++;
-        size = 1;
+        this.size = size;
     }
 
-    public Entity() {
-        coordX = 8;
-        coordY = 1;
-        hitPoints = 100;
-        speed = 1;
-        damage = 50;
-        viewAngle = 0;
-        lastID++;
-        size = 1;
-        texture = Enemy1;
+    boolean isFriendly()
+    {
+        return friendly;
     }
 
-    public boolean getEntityCoord(double[] coord) {
-        coord[0] = coordX;
-        coord[1] = coordY;
-        return hitPoints <= 0;
+    boolean isAlive()
+    {
+        return hitPoints > 0.1;
     }
 
-    public boolean getEntityCoord(int[] coord) {
-        coord[0] = (int) Math.round(coordX);
-        coord[1] = (int) Math.round(coordY);
-        return hitPoints <= 0;
+    public Cords getCords() {
+        return new Cords(cordX, cordY);
     }
 
-    public int getEntityDamage() {
+    public Cords getCords(int a) {
+        return new Cords(Math.round(cordX), Math.round(cordY));
+    }
+
+    public double getDamage() {
         return damage;
     }
 
-    public int getEntityHitPoints() {
+    public double getHitPoints() {
         return hitPoints;
     }
 
-    public double getEntityAngle()
+    public double getAngle()
     {
         return viewAngle;
     }
 
     // Метод атаки сущности
-    public boolean attackEntity(int entity_Damage) {
-        if (hitPoints > 0) {
-            hitPoints -= entity_Damage;
-            return false; // Успешная атака
-        } else {
-            return true; // Сущность не может быть атакована, так как здоровье равно или меньше 0
-        }
+    public void dealDamage(double damage) {
+        hitPoints -= damage;
+        if (isAlive())
+            startAnimation(ANIM_TAKING_DAMAGE, 1);
+        else if(animation != ANIM_DIE)
+            startAnimation(ANIM_DIE);
     }
 
-    public boolean entityStep() {
-        coordX += Utils.projectionToX(speed, Utils.degToRad(viewAngle));
-        coordY += Utils.projectionToY(speed, Utils.degToRad(viewAngle));
-        return hitPoints <= 0;
-    }
-
-    public void entityMapStep(GameMap map)
+    public void kill()
     {
-        double[] oldXY = new double[2];
-        this.getEntityCoord(oldXY);
+        hitPoints = 0;
+        startAnimation(ANIM_DIE);
+    }
 
-        this.entityStep();
+    public boolean mapStep(GameMap map)
+    {
+        Cords oldCords;
+        oldCords = this.getCords();
 
-        //если объект шагнул в стену
-        if (map.isWall(this.coordX, this.coordY))
+        double sizeShiftX = size / 2;
+        double sizeShiftY = sizeShiftX;
+
+        this.baseStep();
+
+        double deltaX = this.cordX - oldCords.getX();
+        if (deltaX < 0)
+            sizeShiftX *= -1;
+
+        double deltaY = this.cordY - oldCords.getY();
+        if (deltaY < 0)
+            sizeShiftY *= -1;
+
+
+//если объект шагнул в стену
+        if (map.isWall(this.cordX + sizeShiftX, this.cordY))
         {
-            double deltaX = this.coordX - oldXY[0];
-            double deltaY = this.coordY - oldXY[1];
-
-            //если можно продолжить движение по оси X
-            if (!map.isWall(oldXY[0] + deltaX, oldXY[1]))
+            if (map.isWall(this.cordX, this.cordY + sizeShiftY))
             {
-                this.coordX = oldXY[0] + deltaX;
-                this.coordY = oldXY[1];
-            }
-            //если можно продолжить движение по оси Y
-            else if (!map.isWall(oldXY[0], oldXY[1] + deltaY))
-            {
-                this.coordX = oldXY[0];
-                this.coordY = oldXY[1] + deltaY;
+                this.cordX = oldCords.getX();
+                this.cordY = oldCords.getY();
             }
             else
             {
-                this.coordX = oldXY[0];
-                this.coordY = oldXY[1];
+                this.cordX = oldCords.getX();
+                this.cordY = oldCords.getY() + deltaY;
             }
+            return true;
         }
+        else
+        {
+            if (map.isWall(this.cordX, this.cordY + sizeShiftY))
+            {
+                this.cordX = oldCords.getX() + deltaX;
+                this.cordY = oldCords.getY();
+                return true;
+            }
+
+        }
+
+        return false;
     }
 
-    public double getSize()
+    public boolean directionStep(GameMap map, double angle)
     {
-        return size;
+	    double oldAngle = viewAngle;
+        viewAngle = angle;
+	    boolean fl = mapStep(map);
+        viewAngle = oldAngle;
+        return fl;
     }
 
-    public TextureType getTextureType()
+    public boolean intersects(Entity other, float coefficient)
     {
-        return texture;
+	    double distance = Utils.calcDistance(cordX, cordY, other.cordX, other.cordY);
+        return distance < (size + other.size) * coefficient / 2;
     }
 
-    abstract public boolean entityMovement(GameMap map, double playerX, double playerY);
+    public void startAnimation(Animations animation, int a)
+    {
+        frame = 0;
+        this.animation = animation;
+    }
+
+    abstract public boolean update(GameMap map, Vector<Entity> entities);
+
+
 }
 

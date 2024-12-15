@@ -2,135 +2,116 @@ package DOM;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Vector;
 
 
 public class Game {
-    public Player you;             // Игрок
-    public TexturePack tPack;     //хранилище текстур
+    public Player player;             // Игрок
+    public TexturePack texture_pack;     //хранилище текстур
 
-    Map<Integer, Entity> entities;
+    Vector<Entity> entities = new Vector<Entity>();
 
-    public Game() {
-        you = new Player();
-        entities = new HashMap<>();
-
-        try {
-            tPack = new TexturePack();
-        } catch (Exception _) {
-            tPack = new TexturePack(1);
-        }
-
-        entities.put(Entity.lastID, new Enemy());
-        entities.put(Entity.lastID, new Enemy(1, 5, 0.01, 100, 50));
-    }
-
-    public void allEntityMovment(GameMap map)
+    public Game()
     {
-        double[] playerCoordXY = new double[2];
-        this.you.getEntityCoord(playerCoordXY);
+        player = new Player(7, 1);
 
-        Iterator<Map.Entry<Integer, Entity>> iterator = entities.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, Entity> entry = iterator.next();
-            Entity entity = entry.getValue();
-
-            if (entity.entityMovement(map, playerCoordXY[0], playerCoordXY[1])) {
-                // Удаление сущности из Map
-                iterator.remove(); // Используем метод iterator.remove() для корректного удаления
-            }
-        }
-    }
-
-    // Взаимодействие объектов
-    public void interaction(GameMap map)
-    {
-        this.allEntityMovment(map);                    //движение всех лбъектов
-
-        int[] monsterCoordXY = new int[2];                               //координаты врагов
-        int[][] monstersMap = new int[GameMap.MAPSIZEX][GameMap.MAPSIZEY];  //карта id врагов
-
-        for (int i = 0; i < GameMap.MAPSIZEX; i++) {
-            for (int j = 0; j < GameMap.MAPSIZEY; j++) {
-                monstersMap[i][j] = -1;
-            }
-        }
-
-        // Запись координат врагов на карту
-        for (Map.Entry<Integer, Entity> entry : entities.entrySet()) {
-            if (entry.getValue() instanceof Enemy e) {
-
-                e.getEntityCoord(monsterCoordXY);
-                monstersMap[monsterCoordXY[0]][monsterCoordXY[1]] = entry.getKey();
-            }
-        }
-
-
-        int[] playerCoordXY = new int[2];
-        int id = -1;
-
-        //проверка столкновения игрока с врагом
-        if (!this.you.getEntityCoord(playerCoordXY))
-            id = monstersMap[playerCoordXY[0]][playerCoordXY[1]];
-
-        if (id != -1)
+        try
         {
-            Entity e = entities.get(id);
-            this.you.attackEntity(e.getEntityDamage());
+            texture_pack = new TexturePack();
+        }
+        catch (Exception e)
+        {
+            texture_pack = new TexturePack(1);
         }
 
-        //перебор пуль
-        for (Map.Entry<Integer, Entity> entry : entities.entrySet()) {
-            if (entry.getValue() instanceof Bullet b) {
-                int[] bulletCoordXY = new int[2];
-
-                b.getEntityCoord(bulletCoordXY);
-
-                //провекра столкновения пули с врагом
-                try {
-                    id = monstersMap[bulletCoordXY[0]][bulletCoordXY[1]];
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    id = -1;
-                }
-
-                if (id == -1)
-                    continue;
-
-                //поиск врага по id
-                Entity e = entities.get(id);
-
-                //нанесение урона врагу
-                e.attackEntity(b.getEntityDamage());
-
-                b.setRemLen(0);
-                break;
-            }
-
-        }
-
+        entities.add(new Necromancer(2, 7, player));
+        entities.add(new Bomber(1, 5, player));
+        entities.add(new Archer(1, 2, player));
     }
 
-    public int getCountEntity() {
-        return  entities.size();
+    private void allEntityMovement(GameMap map)
+    {
+        Vector<Entity> newEntities = new Vector<>();
+
+        // если entity больше не может двигаться
+        // удаляем entity
+        entities.removeIf(entity -> entity.update(map, newEntities));
+
+        player.update(map, newEntities);
+        entities.addAll(newEntities);
+    }
+
+
+    public Entity getEntityByIndex(int index)
+    {
+        return entities.get(index);
     }
 
     public void playerShot()
     {
-        you.shot(entities);
+        player.shot(entities);
     }
 
-    public Entity getEntityByIndex(int index) {
-        if (index < 0 || index >= entities.size()) {
-            throw new IndexOutOfBoundsException("Index out of bounds");
+    public int getCountEntity()
+    {
+        return entities.size();
+    }
+
+    public void interaction(GameMap map) {
+        this.allEntityMovement(map);                        //движение всех лбъектов
+
+        QuadTree<Entity> quadTree = new QuadTree<Entity>(0, 0, 0, GameMap.MAP_SIZE_X, GameMap.MAP_SIZE_Y);
+
+        for (Entity it : entities) {
+            quadTree.insert(it);
         }
-        Iterator<Entity> iterator = entities.values().iterator();
-        Entity entity = null;
-        for (int i = 0; i <= index; i++) {
-            if (iterator.hasNext()) {
-                entity = iterator.next();
-            } else {
-                throw new IndexOutOfBoundsException("Index out of bounds");
+
+        quadTree.insert(player);
+
+        for (Entity it : entities) {
+            if (!it.isAlive())
+                continue;
+
+            Vector<Entity> potentialCollisions = quadTree.retrieve(it);
+
+            for (Entity potentialCollision : potentialCollisions) {
+
+                if (!potentialCollision.isAlive())
+                    continue;
+
+                if (it == potentialCollision)
+                    continue;
+
+                if (!it.intersects(potentialCollision, 0.7f))
+                    continue;
+
+                if (it instanceof Bullet b) {
+                    // Безопасное приведение к типу Bullet
+                    if (b.isFriendly() != potentialCollision.isFriendly()) {
+                        potentialCollision.dealDamage(b.getDamage());
+                        b.kill();
+                        break; // Завершить цикл после обработки столкновения
+                    }
+                }
+
+                if (it instanceof Enemy e) {
+
+                    Cords collisionCords;
+                    collisionCords = potentialCollision.getCords();
+
+                    Cords enemyCords;
+                    enemyCords = e.getCords();
+
+                    double distance = Utils.calcDistance(enemyCords.getX(), enemyCords.getY(), collisionCords.getX(), collisionCords.getY());
+                    double angle = Utils.radToDeg(Math.acos((enemyCords.getX() - collisionCords.getX()) / distance));
+
+                    if ((enemyCords.getY() - collisionCords.getY()) / distance < 0)
+                        angle *= -1;
+
+                    e.directionStep(map, angle);
+
+                }
             }
         }
-        return entity;
     }
 }

@@ -1,147 +1,122 @@
 package DOM;
 import org.jsfml.graphics.*;
-import org.jsfml.system.Vector2f;
 
 import java.util.Arrays;
 import java.util.Vector;
 
-import static java.util.Collections.swap;
+import static DOM.TextureType.WALLS;
 
 public class Drawer {
 
     public static final double RAY_STEP = 0.01;			//шаг луча
-    public static final int SCREEN_WIDTH = 800;	//ширина экрана
-    public static final int SCREEN_HEIGHT = 600;	//высота экрана
+    public static final int SCREEN_WIDTH = 640;	//ширина экрана
+    public static final int SCREEN_HEIGHT = 360;	//высота экрана
 
-    private final double[] mas = new double[SCREEN_WIDTH];
+    private final double[][] lengthsAndIndexes = new double[SCREEN_WIDTH][2];
 
     public Drawer()
     {
-        Arrays.fill(mas, 0);
     }
 
-   private void drawVerticalSegment(RenderWindow window, float length, float width, float x, float y, Color color) {
-        //вертикальный отрезок
-        RectangleShape segment = new RectangleShape(new Vector2f(width, length));
+   private void drawVerticalSegment(RenderWindow window, float length, float stripIndex, float x, float y, Texture texture) {
+       Sprite stripeSprite = new Sprite(texture);
 
-        segment.setPosition(x, y);
+       // Устанавливаем текстуру только для нужной полосы шириной в 1 пиксель
+        IntRect textureRect = new IntRect((int) stripIndex, 0, 1, (texture).getSize().y); // 1 пиксель шириной, вся высота текстуры
+       stripeSprite.setTextureRect(textureRect);
 
-        //цвет отрезка
-        segment.setFillColor(color);
+       // Устанавливаем позицию спрайта
+       stripeSprite.setPosition(x, y);
 
-        //рисование
-        window.draw(segment);
+       // Масштабируем спрайт по высоте, чтобы сделать полоску нужной длины
+       stripeSprite.setScale(1.0F, length / (texture).getSize().y);
+
+       // Рисуем полоску в окне
+       window.draw(stripeSprite);
     }
 
-    private void drawImage(RenderWindow window, final Texture texture, float x, float y, float width, float height) {
+    private void drawImage(RenderWindow window, Texture texture, float x, float y, float textureX, float textureY, float width, float height) {
         // Создаем спрайт и устанавливаем текстуру
-        Sprite sprite = new Sprite();
-        sprite.setTexture(texture);
+        Sprite sprite = new Sprite(texture);
+
+        IntRect textureRect = new IntRect(Math.round(textureX) * 128, (int) (textureY * 128), 128, 128);
+        sprite.setTextureRect(textureRect);
 
         // Устанавливаем позицию спрайта
         sprite.setPosition(x, y);
 
         // Рассчитываем масштаб для изменения размера
-        float scaleX = width / (texture).getSize().x;  // Масштаб по оси X
-        float scaleY = height / (texture).getSize().y; // Масштаб по оси Y
+        float scaleX = width / 128;  // Масштаб по оси X
+        float scaleY = height / 128; // Масштаб по оси Y
         sprite.setScale(scaleX, scaleY);                // Применяем масштаб
 
         // Рисуем спрайт в окне
         window.draw(sprite);
     }
 
-    private void dependSorting(Vector<Double> mainMas, Vector<Entity> sideMas, int left, int right) {
-        //Указатели в начало и в конец массива
-        int i = left, j = right;
-
-        //Центральный элемент массива
-        double mid = mainMas.get((left + right) / 2);
-
-        //Делим массив
-        do {
-
-            while (mainMas.get(i) > mid) {
-                i++;
-            }
-
-            while (mainMas.get(j) < mid) {
-                j--;
-            }
-
-            //Меняем элементы местами
-            if (i <= j) {
-
-                swap(sideMas, i, j);
-                swap(mainMas, i, j);
-
-                i++;
-                j--;
-            }
-        } while (i <= j);
-
-
-        //Рекурсивные вызовы, если осталось, что сортировать
-        if (left < j)
-            dependSorting(mainMas, sideMas, left, j);
-        if (i < right)
-            dependSorting(mainMas, sideMas, i, right);
-    }
-
     public void entityDraw(Game gm, RenderWindow window) throws IllegalAccessException {
-        double[] EntityCoordXY = new double[2];
-        double[] PlayerCoordXY = new double[2];
+        Cords entityCords;
+        Cords playerCords;
 
-        int countEnt = gm.getCountEntity();
-        if (countEnt < 1)
+        int countEntities = gm.getCountEntity();
+        if (countEntities < 1)
             throw new IndexOutOfBoundsException("В игре не осталось entity");
 
-        if(gm.you.getEntityCoord(PlayerCoordXY))
+        playerCords = gm.player.getCords();
+        if (!gm.player.isAlive())
             throw new IllegalAccessException("Игрок погиб");
 
         Vector<Double> distToEntity = new Vector<>();       //вектор расстояний до объектов
         Vector<Entity> pointersEntity = new Vector<>();    //вектор указателей на объекты
 
-        //заполнение векторов distToEntity и pointersEntity
-        for (int i = 0; i < countEnt; i++)
-        {
+//заполнение векторов distToEntity и pointersEntity
+        for (int i = 0; i < countEntities; i++) {
             Entity e = gm.getEntityByIndex(i);
-            e.getEntityCoord(EntityCoordXY);
-            distToEntity.add(Utils.calcDistance(EntityCoordXY[0], EntityCoordXY[1], PlayerCoordXY[0], PlayerCoordXY[1]));
+            entityCords = e.getCords();
+            distToEntity.add(Utils.calcDistance(entityCords.getX(), entityCords.getY(), playerCords.getX(), playerCords.getY()));
             pointersEntity.add(e);
         }
 
-        //сортировка по убыванию расстояний
-        dependSorting(distToEntity, pointersEntity, 0, distToEntity.size() - 1);
+//сортировка по убыванию расстояний
+        Utils.dependSorting(distToEntity, pointersEntity, 0, distToEntity.size() - 1);
 
-        double playerAngle = gm.you.getEntityAngle();
+        double playerAngle = gm.player.getAngle();
 
-        for (int i = 0; i < countEnt; i++)
-        {
+        for (int i = 0; i < countEntities; i++) {
             double distance = distToEntity.get(i);
             Entity e = pointersEntity.get(i);
 
-            e.getEntityCoord(EntityCoordXY);
+            entityCords = e.getCords();
 
-            double spriteSize = e.getSize();
+            double spriteSize = e.size;
 
-            double cosPlEnLine = (EntityCoordXY[0] - PlayerCoordXY[0]) / distance;
-            double sinPlEnLine = (EntityCoordXY[1] - PlayerCoordXY[1]) / distance;
+            double cosPlEnLine = (entityCords.getX() - playerCords.getX()) / distance;
+            double sinPlEnLine = (entityCords.getY() - playerCords.getY()) / distance;
 
-            //разность угла взгляда игрока и угла прямой, соединяющей игрока и объект
-            double rotAngle = getRotAngle(playerAngle, cosPlEnLine, sinPlEnLine);
+            double rotAngle = Utils.getRotationAngle(Utils.degToRad(playerAngle), cosPlEnLine, sinPlEnLine);
             if (Math.abs(rotAngle) > Player.FOV)
                 continue;
 
-            int vertLineNum = (int) (SCREEN_WIDTH * rotAngle / Player.FOV);       //номер вертикальной полосы
+            int vertLineNum = (int) (Math.round(SCREEN_WIDTH * rotAngle / Player.FOV));       //номер вертикальной полосы
 
             vertLineNum += SCREEN_WIDTH / 2;
 
             spriteSize *= SCREEN_HEIGHT / distance;
 
+            float animation;
+            int frame;
+            animation = e.getAnimation().ordinal();
+            frame = e.getFrame();
             //отрисовка объекта
-            drawImage(window, gm.tPack.getTexture(e.getTextureType()), (float) (vertLineNum - spriteSize / 2), (float) ((SCREEN_HEIGHT - spriteSize) / 2), (float) spriteSize, (float) spriteSize);
+            if (e.size > 1) {
+                drawImage(window, gm.texture_pack.getTexture(e.texture), (float) (vertLineNum - spriteSize / 2),
+                        (float) (SCREEN_HEIGHT / 2.0 - spriteSize + SCREEN_HEIGHT / (2 * distance)), (float) frame, animation, (float) spriteSize, (float) spriteSize);
+            } else {
 
-            vertLineNum -= (int) (spriteSize / 2) + 1;
+                drawImage(window, gm.texture_pack.getTexture(e.texture), (float) (vertLineNum - spriteSize / 2),
+                        (float) ((SCREEN_HEIGHT - spriteSize) / 2), (float) frame, animation, (float) spriteSize, (float) spriteSize);
+            }
+            vertLineNum -= (int) (spriteSize / 2);
             int rightBorder = (int) (vertLineNum + spriteSize + 2);
 
             if (vertLineNum < 0)
@@ -151,103 +126,90 @@ public class Drawer {
                 rightBorder = SCREEN_WIDTH;
 
             //отрисовка вертикальных полос, перекрывающих объект
-            for (; vertLineNum < rightBorder; vertLineNum++)
-            {
+            for (; vertLineNum < rightBorder; vertLineNum++) {
                 //если вертикальная полоса находится позади объекта
-                if (mas[vertLineNum] > distance)
+                if (lengthsAndIndexes[vertLineNum][0] > distance)
                     continue;
 
-                double len = SCREEN_HEIGHT / distance;
+                double len = SCREEN_HEIGHT / lengthsAndIndexes[vertLineNum][0];
 
-                //вычисление цвета вертикальной полосы
-                int Ws = (int) (255 / Math.sqrt(mas[vertLineNum]));
-                if (Ws > 255)
-                    Ws = 255;
 
-                drawVerticalSegment(window, (float) len, 1F, (float) vertLineNum, (float) ((SCREEN_HEIGHT - len) / 2), new Color( Ws, Ws, Ws));
+                drawVerticalSegment(window, (float) len, (float) lengthsAndIndexes[vertLineNum][1], (float) vertLineNum, (float) ((SCREEN_HEIGHT - len) / 2), gm.texture_pack.getTexture(WALLS));
             }
-
 
 
         }
     }
 
-    private static double getRotAngle(double playerAngle, double cosPlEnLine, double sinPlEnLine) {
-        double cosRotAngle = Math.cos(Utils.degToRad(playerAngle)) * cosPlEnLine + Math.sin(Utils.degToRad(playerAngle)) * sinPlEnLine;
-        double sinRotAngle = Math.sin(Utils.degToRad(playerAngle)) * cosPlEnLine - Math.cos(Utils.degToRad(playerAngle)) * sinPlEnLine;
-
-        if (cosRotAngle > 1)
-            cosRotAngle = 1;
-
-        if (cosRotAngle < -1)
-            cosRotAngle = -1;
-
-        //угол на который игроку нужно повернуться, чтобы смотреть ровно на объект
-        double rotAngle = Utils.radToDeg(Math.acos(cosRotAngle));
-
-        if (sinRotAngle < 0)
-            rotAngle *= -1;
-
-        //если объект находится за обзором игрока
-        rotAngle = Math.round(rotAngle * 1000) / 1000.0;
-        return rotAngle;
-    }
-
     public void drawWalls(GameMap map, Game gm, RenderWindow window) {
-        double[] EntityCoordXY = new double[2];
+        Cords entityCords;
 
-
-        if (!gm.you.getEntityCoord(EntityCoordXY))
+        entityCords = gm.player.getCords();
+        if (gm.player.isAlive())
         {
-            double realPlayerAngle = gm.you.getEntityAngle();
-            double curentPlayerAngle = realPlayerAngle;
+            double realPlayerAngle = gm.player.getAngle();
+            double currentPlayerAngle = realPlayerAngle;
 
-            curentPlayerAngle += Player.FOV / 2.0;
+            currentPlayerAngle += Player.FOV / 2.0;
 
-            for (int i = 0; i < SCREEN_WIDTH; i++)
-            {
+            for (int i = 0; i < SCREEN_WIDTH; i++) {
                 //флаг найденной стены в этом направлении
                 boolean flNotWall = true;
 
-                double currentCosinus = Math.cos(Utils.degToRad(curentPlayerAngle));
-                double currentSinus = Math.sin(Utils.degToRad(curentPlayerAngle));
+                double currentCosines = Math.cos(Utils.degToRad(currentPlayerAngle));
+                double currentSinus = Math.sin(Utils.degToRad(currentPlayerAngle));
 
 
                 //поиск стены на пути луча
-                for (double distance = RAY_STEP; distance < 10 && flNotWall; distance += RAY_STEP)
-                {
-                    double x = distance * currentCosinus;
+                for (double distance = RAY_STEP; distance < 10 && flNotWall; distance += RAY_STEP) {
+                    double x = distance * currentCosines;
                     double y = distance * currentSinus;
 
-                    x += EntityCoordXY[0];
-                    y += EntityCoordXY[1];
+                    x += entityCords.getX();
+                    y += entityCords.getY();
 
                     //если стена
-                    if (map.isWall(x, y))
-                    {
+                    if (map.isWall(x, y)) {
                         //исправление эффекта рыбьего глаза по оси Y
-                        distance = distance * Math.cos(Utils.degToRad(curentPlayerAngle - realPlayerAngle));
+                        distance = distance * Math.cos(Utils.degToRad(currentPlayerAngle - realPlayerAngle));
 
-                        mas[i] = distance;
 
-                        double len = SCREEN_HEIGHT / distance;
+                 double len = SCREEN_HEIGHT / distance;
 
                         //цвет полосы
-                        int Ws = (int) (255 / Math.sqrt(distance));
-                        if (Ws > 255)
-                            Ws = 255;
+                 float dx = (float) (x - Math.round (x) + 0.5);
+                 float dy = (float) (y - Math.round (y) + 0.5);
+                        float stripIndex = (dx + dy) * 128;
+                        if (stripIndex > 128)
+                            stripIndex -= 128;
 
-                        drawVerticalSegment(window, (float) len, 1F, (float) i, (float) ((SCREEN_HEIGHT - len)/2), new Color(Ws, Ws, Ws));
+                        stripIndex += map.whatIsWall((int) x, (int) y) * 128;
+
+                        lengthsAndIndexes[i][0] = distance;
+                        lengthsAndIndexes[i][1] = stripIndex;
+
+
+                        drawVerticalSegment(window, (float) len, stripIndex, (float) i, (float) ((SCREEN_HEIGHT - len) / 2), gm.texture_pack.getTexture(WALLS));
 
                         flNotWall = false;
                     }
 
                 }
                 //исправление эффекта рыбьего глаза по оси X
-                curentPlayerAngle = Math.atan(Math.tan(Utils.degToRad(curentPlayerAngle - realPlayerAngle)) - (2 * Math.tan(Utils.degToRad(Player.FOV * 0.5)) / SCREEN_WIDTH));
-                curentPlayerAngle = Utils.radToDeg(curentPlayerAngle);
-                curentPlayerAngle += realPlayerAngle;
+                currentPlayerAngle = Math.atan(Math.tan(Utils.degToRad (currentPlayerAngle - realPlayerAngle)) -(2 * Math.tan(Utils.degToRad (Player.FOV * 0.5)) /SCREEN_WIDTH));
+                currentPlayerAngle = Utils.radToDeg (currentPlayerAngle);
+                currentPlayerAngle += realPlayerAngle;
             }
         }
+    }
+
+    public void drawPlayerWeapon(Game gm, RenderWindow window)
+    {
+        float animation;
+        int frame;
+        animation = gm.player.getActiveWeapon().getAnimation().ordinal();
+        frame = gm.player.getActiveWeapon().getFrame();
+        drawImage(window, gm.texture_pack.getTexture(gm.player.getActiveWeapon().texture), (float) (SCREEN_WIDTH - SCREEN_HEIGHT),
+            (float) SCREEN_HEIGHT / 3, (float) frame, animation, (float) (SCREEN_HEIGHT/1.5), (float) (SCREEN_HEIGHT/1.5));
     }
 }

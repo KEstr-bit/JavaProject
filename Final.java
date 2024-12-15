@@ -8,7 +8,7 @@ import static DOM.EndingOption.WinGame;
 public class Final {
 
     private final Font font;
-    private EndingOption gameEndType;       //Парамтр окончания игры
+    private EndingOption endingOption;       //Парамтр окончания игры
 
     Final()
     {
@@ -18,7 +18,7 @@ public class Final {
         }
         catch(IOException _) {
         }
-        gameEndType = WinGame;
+        endingOption = WinGame;
     }
 
     private void displayMessage(RenderWindow window, final String message, Color color) {
@@ -28,14 +28,14 @@ public class Final {
         text.setColor(color);
         FloatRect textRect = text.getLocalBounds();
         text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-        text.setPosition(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+        text.setPosition(Drawer.SCREEN_WIDTH / 2.0f, Drawer.SCREEN_HEIGHT / 2.0f);
 
         //вывод
         window.draw(text);
     }
 
     public void outputFinal(RenderWindow window) {
-        switch (gameEndType)
+        switch (endingOption)
         {
             case LooseGame:
                 displayMessage(window, "YOU LOOSE!!!", Color.RED);
@@ -51,6 +51,6 @@ public class Final {
 
     public void changeFinal(EndingOption option)
     {
-        gameEndType = option;
+        endingOption = option;
     }
 }

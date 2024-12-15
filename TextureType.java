@@ -1,6 +1,10 @@
 package DOM;
 
 public enum TextureType {
-    Enemy1,
-    Bullet1
+    ENEMY,
+    BULLET,
+    WALLS,
+    NECROMANCER,
+    SHOTGUN,
+    RIFLE
 }
