@@ -1,97 +1,104 @@
 package DOM;
 
-import java.util.Random;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import static DOM.Animations.*;
-import static DOM.TextureType.BULLET;
 import static DOM.TextureType.NECROMANCER;
+import static DOM.TextureType.SKULL;
 
-public class Necromancer extends Enemy{
+class Necromancer extends Enemy {
+
     private ShotGun shotGun;
+    private List<Entity> entities;
 
-    Necromancer(double cordX, double cordY, Entity target) {
-        super(cordX, cordY, 0.02, 1000, 50, 2, NECROMANCER, target);
-        shotGun = new ShotGun(10, 3, 0.05, 30, false , BULLET);
+    public Necromancer(double coordinateX, double coordinateY, Entity target) {
+        super(coordinateX, coordinateY, 0.01, 2000, 50, 2, NECROMANCER, target);
+        shotGun = new ShotGun(10, 3, 0.01, 30, 0.025, 5, 100, SKULL, false);
+        entities = new ArrayList<>();
+    }
+
+
+    public void updateAll(double delta) {
+        entities.removeIf(entity -> entity.update(delta));
     }
 
     @Override
-    public boolean update(GameMap map, Vector<Entity> entities) {
-        Random random = new Random();
-        double distance = updateAngle();
-        switch (animation)
-        {
-            case ANIM_MOVE:
+    public boolean update(double delta) {
+        updateAnimation(delta);
+        shotGun.update(delta);
+        updateAll(delta);
 
-                if (distance > 5){
-                    mapStep(map);
+        if (isAlive()) {
+            double distance = lookAtTarget();
+
+            switch (animation) {
+                case ANIM_MOVE:
+                    if (distance > 7) {
+                        move(delta);
+                    }
+                    return false;
+
+                case ANIM_ATTACK1:
+                    if (timer.check()) {
+                        if (!shotGun.shot(cordX, cordY, viewAngle)) {
+                            shotGun.reload();
+                        }
+                        timer.start(0.5);
+                    }
+                    break;
+
+                case ANIM_ATTACK2:
+                    if (timer.check()) {
+                        respawn();
+                        timer.start(0.5);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (timer.check() && isTargetSeen()) {
+                if (distance > 7) {
+                    startAnimation(ANIM_MOVE);
+                } else {
+                    startAnimation(ANIM_ATTACK1);
+                    timer.start(0.6);
                 }
-                break;
-            case ANIM_ATTACK1:
-                if (frame == 7)
-                    if (!shotGun.shot(cordX, cordY, viewAngle, entities))
-                        shotGun.reloading();
-                break;
-            case ANIM_ATTACK2:
-                if (frame == TexturePack.FRAMES_COUNT / 2.0f)
-                    respawn(map, entities);
-                break;
-            default:
-                break;
-        }
 
-        shotGun.updateAnimation();
+                if (entities.size() < 5) {
+                    startAnimation(ANIM_ATTACK2);
+                    timer.start(0.5);
+                }
+            }
+        } else if (animation == ANIM_BASE) {
+            isVisible = false;
 
-        updateAnimation();
-
-        if (eventFl)
-            return false;
-
-        if (!isAlive())
-            return true;
-
-//если враг не видит цель
-        if (!isTargetSeen(map)) {
-            return false;
-        }
-
-        if (distance > 5) {
-            startAnimation(ANIM_MOVE);
-        }
-
-        if(random.nextInt()%50 == 0)
-        {
-            if(random.nextBoolean())
-                startAnimation(ANIM_ATTACK1);
-            else
-                startAnimation(ANIM_ATTACK2);
+            if (shotGun.hasNotBullets() && entities.isEmpty()) {
+                return true;
+            }
         }
 
         return false;
     }
 
-    private void respawn(GameMap map, Vector<Entity> entities)
-    {
-        Random random = new Random();
-
+    public void respawn() {
         double angle = viewAngle;
         angle -= 45;
-        for(int i = 0; i < 4; i++)
-        {
+        for (int i = 0; i < 4; i++) {
             angle += 90;
-            double x, y;
-            x = 2 * Math.cos(Utils.degToRad(angle)) + cordX;
-            y = 2 * Math.sin(Utils.degToRad(angle)) + cordY;
-            if (!map.isWall(x, y))
-            {
-                if(random.nextBoolean())
-                {
+            double x = 2 * Math.cos(Helper.degToRad(angle)) + cordX;
+            double y = 2 * Math.sin(Helper.degToRad(angle)) + cordY;
+
+            if (!GameMap.isWall(x, y)) {
+                if (Math.random() < 0.5) {
                     entities.add(new Bomber(x, y, target));
-                }
-                else
-                {
+                } else {
                     entities.add(new Archer(x, y, target));
                 }
+                PhysicsEngine.addEntity(entities.get(entities.size() - 1));
+                RenderEngine.addEntity(entities.get(entities.size() - 1));
             }
         }
     }

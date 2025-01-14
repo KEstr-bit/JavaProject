@@ -1,7 +1,4 @@
 package DOM;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Vector;
 
 
@@ -102,8 +99,8 @@ public class Game {
                     Cords enemyCords;
                     enemyCords = e.getCords();
 
-                    double distance = Utils.calcDistance(enemyCords.getX(), enemyCords.getY(), collisionCords.getX(), collisionCords.getY());
-                    double angle = Utils.radToDeg(Math.acos((enemyCords.getX() - collisionCords.getX()) / distance));
+                    double distance = Helper.calcDistance(enemyCords.getX(), enemyCords.getY(), collisionCords.getX(), collisionCords.getY());
+                    double angle = Helper.radToDeg(Math.acos((enemyCords.getX() - collisionCords.getX()) / distance));
 
                     if ((enemyCords.getY() - collisionCords.getY()) / distance < 0)
                         angle *= -1;

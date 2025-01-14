@@ -1,92 +1,70 @@
 package DOM;
 
-import java.util.Random;
-import java.util.Vector;
+import static DOM.Animations.*;
+import static DOM.TextureType.ARCHER;
+import static DOM.TextureType.FGHYH;
 
-import static DOM.Animations.ANIM_ATTACK1;
-import static DOM.Animations.ANIM_MOVE;
-import static DOM.TextureType.BULLET;
-import static DOM.TextureType.ENEMY;
-
-public class Archer extends Enemy implements Cloneable{
+class Archer extends Enemy {
     private Rifle rifle;
-    private int shift = 0;
+    int shift = 90;
 
-    public Archer(double cordX, double cordY,  Entity target) {
-        super(cordX, cordY, 0.02, 100, 50, 1, ENEMY, target);
-        rifle = new Rifle(10, 1, 0.1,
-                50,false,  BULLET);
+    public Archer(double coordinateX, double coordinateY, Entity target) {
+        super(coordinateX, coordinateY, 0.01, 100, 50, 1, ARCHER, target);
+        rifle = new Rifle(10, 1, 0.01, 0.035, 10, 50, FGHYH, false);
     }
 
     @Override
-    public boolean update(GameMap map, Vector<Entity> entities) {
-        Random random = new Random();
-        double distance = updateAngle();
-        switch (animation)
-        {
-            case ANIM_MOVE:
-                if (distance > 5)
-                    mapStep(map);
-                else if (distance < 3)
-                    directionStep(map,viewAngle - 180);
-                else
-                {
-                    if (frame == 0.0f)
-                    {
-                        if (random.nextBoolean())
-                            shift = -90;
-                        else
-                            shift = 90;
+    public boolean update(double delta) {
+
+        updateAnimation(delta);
+        rifle.update(delta);
+
+        if (isAlive()) {
+            double distance = lookAtTarget();
+
+            switch (animation) {
+                case ANIM_MOVE:
+                    if (distance > 5) {
+                        move(delta);
+                    } else if (distance < 3) {
+                        pushAt(delta, viewAngle - 180);
+                    } else {
+                        if (timer.check()) {
+                            timer.start(0.2);
+                            if (Math.random() < 0.5) // simulating random with 50% chance
+                                shift *= -1;
+                        }
+                        if (pushAt(delta, viewAngle + shift))
+                            shift *= -1;
                     }
+                    return false;
 
-                    if (directionStep(map, viewAngle - shift))
-                        shift *= -1;
+                case ANIM_ATTACK1:
+                    if (timer.check()) {
+                        if (!rifle.shot(cordX, cordY, viewAngle))
+                            rifle.reload();
+                        timer.start(0.5);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (timer.check() && isTargetSeen()) {
+                if (Math.random() < 0.5) {
+                    startAnimation(ANIM_ATTACK1);
+                    timer.start(0.3);
+                } else {
+                    startAnimation(ANIM_MOVE);
                 }
-                break;
-            case ANIM_ATTACK1:
-                if (frame == TexturePack.FRAMES_COUNT / 2.0f)
-                    if (!rifle.shot(cordX, cordY, viewAngle, entities))
-                        rifle.reloading();
-                break;
-            default:
-                break;
+            }
+
+        } else if (animation == ANIM_BASE) {
+            isVisible = false;
+            return rifle.hasNotBullets();
         }
 
-        rifle.updateAnimation();
-
-        updateAnimation();
-
-        if (eventFl)
-            return false;
-
-        if(!isAlive())
-            return true;
-
-//если враг не видит цель
-        if (!isTargetSeen(map)) {
-            return false;
-        }
-
-        if (random.nextBoolean())
-        {
-            startAnimation(ANIM_ATTACK1);
-            return false;
-        }
-
-        startAnimation(ANIM_MOVE);
         return false;
-    }
-
-    @Override
-    public Archer clone() throws CloneNotSupportedException {
-        return (Archer) super.clone();
-    }
-
-    public Archer deepClone() throws CloneNotSupportedException {
-        Archer cloned = (Archer) super.clone(); // Клонируем самого себя
-        cloned.rifle = new Rifle(this.rifle.magazine_capacity, this.rifle.bulletCount,
-                this.rifle.bulletSpeed, this.rifle.bulletDamage, this.rifle.friendly,
-                this.rifle.bulletTexture); // Клонируем rifle
-        return cloned; // Возвращаем глубокую копию
     }
 }

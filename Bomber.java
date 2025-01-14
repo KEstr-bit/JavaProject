@@ -2,54 +2,60 @@ package DOM;
 
 import java.util.Vector;
 
-import static DOM.Animations.ANIM_ATTACK1;
-import static DOM.Animations.ANIM_MOVE;
+import static DOM.Animations.*;
 import static DOM.TextureType.ENEMY;
 
-public class Bomber extends Enemy{
+class Bomber extends Enemy {
+    private boolean exploded = false;
 
-    public Bomber(double cordX, double cordY, Entity target) {
-        super(cordX, cordY, 0.06, 50, 100, 1, ENEMY, target);
+    public Bomber(double coordinateX, double coordinateY, Entity target) {
+        super(coordinateX, coordinateY, 0.03, 50, 100, 1, ENEMY, target);
     }
 
     @Override
-    public boolean update(GameMap map, Vector<Entity> entities) {
-        updateAngle();
-        switch (animation)
-        {
-            case ANIM_MOVE:
-                mapStep(map);
-                break;
-            case ANIM_ATTACK1:
-                if(frame == 7.0f && intersects(target, 1))
-            {
-                target.dealDamage(damage);
+    public boolean update(double delta) {
+        updateAnimation(delta);
+
+        if (isAlive()) {
+            lookAtTarget();
+
+            switch (animation) {
+                case ANIM_MOVE:
+                    move(delta);
+                    return false;
+
+                case ANIM_ATTACK1:
+                    if (timer.check()) {
+                        if (intersects(target, 1.3f)) {
+                            target.takeDamage(damage);
+                        }
+
+                        exploded = true;
+                        timer.start(0.5);
+                    }
+                    return false;
+
+                default:
+                    break;
+            }
+
+            if (exploded) {
                 kill();
             }
-            break;
-            default:
-                break;
-        }
 
-        updateAnimation();
-
-        if (eventFl)
-            return false;
-
-        if (!isAlive())
+            if (timer.check() && isTargetSeen()) {
+                if (intersects(target, 1)) {
+                    startAnimation(ANIM_ATTACK1);
+                    timer.start(0.5);
+                } else {
+                    startAnimation(ANIM_MOVE);
+                }
+            }
+        } else if (animation == ANIM_BASE) {
+            isVisible = false;
             return true;
-
-        //если враг не видит цель
-        if (!isTargetSeen(map)){
-            return false;
         }
 
-        if (intersects(target, 0.7f)) {
-            startAnimation(ANIM_ATTACK1);
-            return false;
-        }
-
-        startAnimation(ANIM_MOVE);
         return false;
     }
 }

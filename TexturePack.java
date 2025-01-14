@@ -3,20 +3,28 @@ package DOM;
 import org.jsfml.graphics.Image;
 import org.jsfml.graphics.Texture;
 
-public class TexturePack {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final Texture[] textures = new Texture[TextureType.values().length];
-    static int FRAMES_COUNT = 8;
 
+class TexturePack {
+    private List<Texture> textures;
+    public static final int SIZE_WALL_TEXT = 128;
+    public static final int SIZE_ENTITY_TEXT = 128;
+    public static final int SIZE_FLOOR_TEXT = 64;
+    public static final int FRAMES_COUNT = 8;
+
+    // Constructor with no parameters
     public TexturePack() throws Exception {
 
         Image img = new Image();
         int countText = TextureType.values().length;
         for(int i = 0; i < countText; i++) {
             try {
-                textures[i] = new Texture();
+                assert false;
+                textures.set(i, new Texture());
                 img.loadFromFile(java.nio.file.Paths.get("image" + i + ".png").toAbsolutePath());
-                textures[i].loadFromImage(img);
+                textures.get(i).loadFromImage(img);
             }
             catch (Exception _) {
                 throw new Exception("Не удалось загрузить image" + i + ".png");
@@ -24,19 +32,17 @@ public class TexturePack {
         }
     }
 
-    public TexturePack(int a)
-    {
-        int countText = TextureType.values().length;
-        for(int i = 0; i < countText; i++)
-                textures[i] = new Texture();
+    // Constructor with an integer parameter
+    public TexturePack(int unusedParameter) {
+        textures = new ArrayList<>();
+        Texture texture = new Texture();
+        for (int i = 0; i < TextureType.values().length; i++) {
+            textures.add(texture);
+        }
     }
 
-    public Texture getTexture(TextureType type)
-    {
-        return textures[type.ordinal()];
+    // Get a texture based on the type
+    public Texture getTexture(TextureType type) {
+        return textures.get(type.ordinal());
     }
-
-
-
-
 }

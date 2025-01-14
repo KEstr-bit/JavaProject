@@ -1,5 +1,5 @@
 package DOM;
 
-public enum WeaponOption {
+public enum GunOption {
     GUN_SHOTGUN, GUN_RIFLE
 }

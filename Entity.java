@@ -1,187 +1,192 @@
 package DOM;
 
 
-import java.util.Vector;
+abstract public class Entity implements AnimationControl {
+    private TextureType texture;
+    private double size;
+    private int maxHealthPoints;
+    private boolean isFriendly;
+    private boolean isPushable;
 
-import static DOM.Animations.*;
-
-public abstract class Entity implements AnimationControl {
-    public final TextureType texture;
-    public final double size;
+    protected Timer timer;
     protected double cordX;
     protected double cordY;
     protected double hitPoints;
     protected double damage;
-    protected double speed;
-    protected double viewAngle;
-    protected boolean friendly;
-    protected boolean eventFl = false;
+    protected double velocity;
+    protected double viewAngle = 180;
+
+    protected boolean isVisible = true;
     protected float frame = 0;
-    protected Animations animation = ANIM_SPAWN;
+    protected Animations animation = Animations.ANIM_SPAWN;
 
-    public void startAnimation(Animations animation)
-    {
-        frame = 0;
-        this.animation = animation;
-        eventFl = true;
-    }
-
-    public Animations getAnimation()
-    {
-        return this.animation;
-    }
-
-    public int getFrame()
-    {
-        return (int)(Math.round(this.frame));
-    }
-
-    public void updateAnimation()
-    {
-        frame += FRAME_SPEED;
-        if (Math.round(frame) >= TexturePack.FRAMES_COUNT)
-        {
-            frame = 0;
-            animation = ANIM_BASE;
-            eventFl = false;
-        }
-    }
-
-    protected void baseStep() {
-        cordX += Utils.projectToX(speed, Utils.degToRad(viewAngle));
-        cordY += Utils.projectToY(speed, Utils.degToRad(viewAngle));
-    }
-
-    public Entity(double cordX, double cordY, double speed, double hitPoints,
-                  double damage, double size, TextureType texture, boolean friendly)
-    {
-        this.cordX = cordX;
-        this.cordY = cordY;
-        this.speed = speed;
-        this.damage = damage;
-        this.hitPoints = hitPoints;
-        this.friendly = friendly;
+    public Entity(double cordX, double cordY, double velocity, int maxHealthPoints,
+                  double damage, double size, TextureType texture, boolean isFriendly, boolean isPushable) {
         this.texture = texture;
         this.size = size;
+        this.maxHealthPoints = maxHealthPoints;
+        this.hitPoints = maxHealthPoints;
+        this.isFriendly = isFriendly;
+        this.isPushable = isPushable;
+        this.cordX = cordX;
+        this.cordY = cordY;
+        this.velocity = velocity;
+        this.damage = damage;
+        timer.start(0.5);
     }
 
-    boolean isFriendly()
-    {
-        return friendly;
-    }
-
-    boolean isAlive()
-    {
+    public boolean isAlive() {
         return hitPoints > 0.1;
     }
 
-    public Cords getCords() {
-        return new Cords(cordX, cordY);
+    public boolean isFriendly() {
+        return isFriendly;
     }
 
-    public Cords getCords(int a) {
-        return new Cords(Math.round(cordX), Math.round(cordY));
+    public boolean isPushable() {
+        return isPushable;
+    }
+
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    public void getCords(int[] coordinates) {
+        coordinates[0] = (int) Math.round(this.cordX);
+        coordinates[1] = (int) Math.round(this.cordY);
+    }
+
+    public void getCords(double[] coordinates) {
+        coordinates[0] = this.cordX;
+        coordinates[1] = this.cordY;
     }
 
     public double getDamage() {
         return damage;
     }
 
-    public double getHitPoints() {
-        return hitPoints;
-    }
-
-    public double getAngle()
-    {
+    public double getAngle() {
         return viewAngle;
     }
 
-    // Метод атаки сущности
-    public void dealDamage(double damage) {
-        hitPoints -= damage;
-        if (isAlive())
-            startAnimation(ANIM_TAKING_DAMAGE, 1);
-        else if(animation != ANIM_DIE)
-            startAnimation(ANIM_DIE);
+    public double getSize() {
+        return size;
     }
 
-    public void kill()
-    {
-        hitPoints = 0;
-        startAnimation(ANIM_DIE);
+    public int getMaxHealthPoints() {
+        return maxHealthPoints;
     }
 
-    public boolean mapStep(GameMap map)
-    {
-        Cords oldCords;
-        oldCords = this.getCords();
+    public TextureType getTexture() {
+        return texture;
+    }
+
+    public void takeDamage(double damage) {
+        if (isAlive()) {
+            hitPoints -= damage;
+            startAnimation(Animations.ANIM_TAKING_DAMAGE);
+
+            if (!isAlive()) {
+                startAnimation(Animations.ANIM_DIE);
+                timer.start(0.5);
+            }
+        }
+    }
+
+    public void kill() {
+        if (isAlive()) {
+            hitPoints = 0;
+            startAnimation(Animations.ANIM_DIE);
+            timer.start(0.5);
+        }
+    }
+
+    protected void baseStep(double delta) {
+        cordX += Helper.projectToX(velocity * delta / TexturePack.FRAMES_COUNT, Helper.degToRad(viewAngle));
+        cordY += Helper.projectToY(velocity * delta / TexturePack.FRAMES_COUNT, Helper.degToRad(viewAngle));
+    }
+
+    public boolean move(double delta) {
+        double oldX, oldY;
+        double[] oldCoordinates = new double[2];
+        getCords(oldCoordinates);
+        oldX = oldCoordinates[0];
+        oldY = oldCoordinates[1];
 
         double sizeShiftX = size / 2;
         double sizeShiftY = sizeShiftX;
 
-        this.baseStep();
+        baseStep(delta);
 
-        double deltaX = this.cordX - oldCords.getX();
-        if (deltaX < 0)
+        double deltaX = this.cordX - oldX;
+        if (deltaX < 0) {
             sizeShiftX *= -1;
+        }
 
-        double deltaY = this.cordY - oldCords.getY();
-        if (deltaY < 0)
+        double deltaY = this.cordY - oldY;
+        if (deltaY < 0) {
             sizeShiftY *= -1;
+        }
 
-
-//если объект шагнул в стену
-        if (map.isWall(this.cordX + sizeShiftX, this.cordY))
-        {
-            if (map.isWall(this.cordX, this.cordY + sizeShiftY))
-            {
-                this.cordX = oldCords.getX();
-                this.cordY = oldCords.getY();
-            }
-            else
-            {
-                this.cordX = oldCords.getX();
-                this.cordY = oldCords.getY() + deltaY;
+        if (GameMap.isWall(this.cordX + sizeShiftX, this.cordY)) {
+            if (GameMap.isWall(this.cordX, this.cordY + sizeShiftY)) {
+                this.cordX = oldX;
+                this.cordY = oldY;
+            } else {
+                this.cordX = oldX;
+                this.cordY = oldY + deltaY;
             }
             return true;
         }
-        else
-        {
-            if (map.isWall(this.cordX, this.cordY + sizeShiftY))
-            {
-                this.cordX = oldCords.getX() + deltaX;
-                this.cordY = oldCords.getY();
-                return true;
-            }
 
+        if (GameMap.isWall(this.cordX, this.cordY + sizeShiftY)) {
+            this.cordX = oldX + deltaX;
+            this.cordY = oldY;
+            return true;
         }
 
         return false;
     }
 
-    public boolean directionStep(GameMap map, double angle)
-    {
-	    double oldAngle = viewAngle;
+    public boolean pushAt(double delta, double angle) {
+        double oldAngle = viewAngle;
         viewAngle = angle;
-	    boolean fl = mapStep(map);
+        boolean didMove = move(delta);
         viewAngle = oldAngle;
-        return fl;
+        return didMove;
     }
 
-    public boolean intersects(Entity other, float coefficient)
-    {
-	    double distance = Utils.calcDistance(cordX, cordY, other.cordX, other.cordY);
+    public boolean intersects(Entity other, float coefficient) {
+        double distance = Helper.calcDistance(cordX, cordY, other.cordX, other.cordY);
         return distance < (size + other.size) * coefficient / 2;
     }
 
-    public void startAnimation(Animations animation, int a)
-    {
+    @Override
+    public void startAnimation(Animations animation) {
         frame = 0;
         this.animation = animation;
     }
 
-    abstract public boolean update(GameMap map, Vector<Entity> entities);
+    @Override
+    public Animations getAnimation() {
+        return animation;
+    }
 
+    @Override
+    public int getFrame() {
+        return (int) frame;
+    }
 
+    @Override
+    public void updateAnimation(double delta) {
+        frame += (float) (FRAME_SPEED * delta);
+        if ((int) Math.round(frame) >= TexturePack.FRAMES_COUNT) {
+            frame = 0;
+            animation = Animations.ANIM_BASE;
+        }
+    }
+
+    // Additional abstract method that must be implemented by subclasses
+    public abstract boolean update(double delta);
 }
 

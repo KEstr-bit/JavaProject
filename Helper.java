@@ -2,7 +2,7 @@ package DOM;
 
 import java.util.Vector;
 
-public class Utils {
+public class Helper {
     static double calcDistance(double firstX, double firstY, double secondX, double secondY) {
         return Math.sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
     }

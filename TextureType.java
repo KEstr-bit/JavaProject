@@ -6,5 +6,12 @@ public enum TextureType {
     WALLS,
     NECROMANCER,
     SHOTGUN,
-    RIFLE
+    RIFLE,
+    PLAYER_HEART,
+    SKY,
+    ARCHER,
+    SKULL,
+    FGHYH,
+    ST,
+    FLOORS,
 }

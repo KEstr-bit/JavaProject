@@ -50,13 +50,13 @@ class QuadTree<T extends Entity> {
         double verticalMidpoint = x + (width / 2);
         double horizontalMidpoint = y + (height / 2);
 
-        Cords entityCords;
-        entityCords = entity.getCords();
+        double[] entityCords = new double[2];
+        entity.getCords(entityCords);
 
-        boolean topQuad = (entityCords.getY() < horizontalMidpoint);
-        boolean bottomQuad = (entityCords.getY() > horizontalMidpoint);
+        boolean topQuad = (entityCords[0] < horizontalMidpoint);
+        boolean bottomQuad = (entityCords[1] > horizontalMidpoint);
 
-        if (entityCords.getX() < verticalMidpoint) {
+        if (entityCords[0] < verticalMidpoint) {
             if (topQuad) {
                 index = 0; // Северо-западный
             } else if (bottomQuad) {

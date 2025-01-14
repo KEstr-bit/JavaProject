@@ -1,7 +1,6 @@
 package DOM;
 import org.jsfml.graphics.*;
 
-import java.util.Arrays;
 import java.util.Vector;
 
 import static DOM.TextureType.WALLS;
@@ -73,12 +72,12 @@ public class Drawer {
         for (int i = 0; i < countEntities; i++) {
             Entity e = gm.getEntityByIndex(i);
             entityCords = e.getCords();
-            distToEntity.add(Utils.calcDistance(entityCords.getX(), entityCords.getY(), playerCords.getX(), playerCords.getY()));
+            distToEntity.add(Helper.calcDistance(entityCords.getX(), entityCords.getY(), playerCords.getX(), playerCords.getY()));
             pointersEntity.add(e);
         }
 
 //сортировка по убыванию расстояний
-        Utils.dependSorting(distToEntity, pointersEntity, 0, distToEntity.size() - 1);
+        Helper.dependSorting(distToEntity, pointersEntity, 0, distToEntity.size() - 1);
 
         double playerAngle = gm.player.getAngle();
 
@@ -93,7 +92,7 @@ public class Drawer {
             double cosPlEnLine = (entityCords.getX() - playerCords.getX()) / distance;
             double sinPlEnLine = (entityCords.getY() - playerCords.getY()) / distance;
 
-            double rotAngle = Utils.getRotationAngle(Utils.degToRad(playerAngle), cosPlEnLine, sinPlEnLine);
+            double rotAngle = Helper.getRotationAngle(Helper.degToRad(playerAngle), cosPlEnLine, sinPlEnLine);
             if (Math.abs(rotAngle) > Player.FOV)
                 continue;
 
@@ -156,8 +155,8 @@ public class Drawer {
                 //флаг найденной стены в этом направлении
                 boolean flNotWall = true;
 
-                double currentCosines = Math.cos(Utils.degToRad(currentPlayerAngle));
-                double currentSinus = Math.sin(Utils.degToRad(currentPlayerAngle));
+                double currentCosines = Math.cos(Helper.degToRad(currentPlayerAngle));
+                double currentSinus = Math.sin(Helper.degToRad(currentPlayerAngle));
 
 
                 //поиск стены на пути луча
@@ -171,7 +170,7 @@ public class Drawer {
                     //если стена
                     if (map.isWall(x, y)) {
                         //исправление эффекта рыбьего глаза по оси Y
-                        distance = distance * Math.cos(Utils.degToRad(currentPlayerAngle - realPlayerAngle));
+                        distance = distance * Math.cos(Helper.degToRad(currentPlayerAngle - realPlayerAngle));
 
 
                  double len = SCREEN_HEIGHT / distance;
@@ -196,8 +195,8 @@ public class Drawer {
 
                 }
                 //исправление эффекта рыбьего глаза по оси X
-                currentPlayerAngle = Math.atan(Math.tan(Utils.degToRad (currentPlayerAngle - realPlayerAngle)) -(2 * Math.tan(Utils.degToRad (Player.FOV * 0.5)) /SCREEN_WIDTH));
-                currentPlayerAngle = Utils.radToDeg (currentPlayerAngle);
+                currentPlayerAngle = Math.atan(Math.tan(Helper.degToRad (currentPlayerAngle - realPlayerAngle)) -(2 * Math.tan(Helper.degToRad (Player.FOV * 0.5)) /SCREEN_WIDTH));
+                currentPlayerAngle = Helper.radToDeg (currentPlayerAngle);
                 currentPlayerAngle += realPlayerAngle;
             }
         }

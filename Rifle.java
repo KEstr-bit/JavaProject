@@ -1,47 +1,47 @@
 package DOM;
-import java.util.Map;
 import java.util.Vector;
 
 import static DOM.Animations.ANIM_ATTACK1;
+import static DOM.TextureType.RIFLE;
 
-public class Rifle extends Weapon{
+import java.util.ArrayList;
 
-    static final double SIDE_SHIFT = 0.25;
-
-    Rifle(int magazineCapacity, int bulletCount, double bulletSpeed, double bulletDamage, boolean friendly, TextureType bulletTexture) {
-        super(magazineCapacity, bulletCount, bulletSpeed, bulletDamage, friendly, TextureType.RIFLE, bulletTexture);
+class Rifle extends Gun {
+    public Rifle(int magazineCapacity, int ammoPerShot, double velocity, double bulletVelocity, double bulletHP,
+                 double bulletDamage, TextureType bulletTexture, boolean friendly) {
+        super(magazineCapacity, ammoPerShot, velocity, bulletVelocity, bulletHP, bulletDamage, friendly, RIFLE, bulletTexture);
     }
 
     @Override
-    public boolean shot(double cordX, double cordY, double shotAngle, Vector<Entity> entities) {
-
-        if (ammunition < bulletCount){
+    public boolean shot(double cordX, double cordY, double shotAngle) {
+        if (ammunition < ammoPerShot) {
             return false;
         }
 
-        if (eventFl) {
+        if (!timer.check()) {
             return true;
         }
 
-        ammunition -= bulletCount;
+        ammunition -= ammoPerShot;
         startAnimation(ANIM_ATTACK1);
+        timer.start(0.3);
 
-        //смещение пули от точки выстрела
+        // Offset bullet from the shooting point
         double sideShift = SIDE_SHIFT;
 
-        for (int i = 0; i < bulletCount; i++)
-        {
-            sideShift += bulletSpeed;
+        for (int i = 0; i < ammoPerShot; i++) {
+            sideShift += bulletVelocity;
 
-            double x = Utils.projectToX(sideShift, Utils.degToRad(shotAngle));
-            double y = Utils.projectToY(sideShift, Utils.degToRad(shotAngle));
+            double x = Helper.projectToX(sideShift, Helper.degToRad(shotAngle));
+            double y = Helper.projectToY(sideShift, Helper.degToRad(shotAngle));
 
             x += cordX;
             y += cordY;
 
-            //инициализация новой пули
-            entities.add(new Bullet(x, y, shotAngle, bulletSpeed, 10, bulletDamage, bulletTexture, friendly));
-
+            // Initialize new bullet
+            bullets.add(new Bullet(x, y, shotAngle, bulletVelocity, (int) bulletHP, bulletDamage, bulletTexture, isFriendly()));
+            PhysicsEngine.addEntity(bullets.get(bullets.size() - 1));
+            RenderEngine.addEntity(bullets.get(bullets.size() - 1));
         }
         return true;
     }

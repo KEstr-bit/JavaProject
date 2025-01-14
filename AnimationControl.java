@@ -13,5 +13,5 @@ public interface AnimationControl {
     int getFrame();
 
     // Метод для обновления анимации
-    void updateAnimation();
+    void updateAnimation(double delta);
 }

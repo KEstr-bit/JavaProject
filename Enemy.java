@@ -1,57 +1,55 @@
 package DOM;
 
-public abstract class Enemy extends Entity{
+abstract class Enemy extends Entity {
+    protected Entity target; // Using Optional to handle nullability
+    private static final double VISION_STEP = 0.2;
 
-    protected Entity target;
-    public static final double VISION_STEP = 0.2; //шаг луча взгляда
-
-    Enemy(double cordX, double cordY, double speed, double hitPoints, double damage, double size, TextureType texture, Entity target)
-    {
-        super(cordX, cordY, speed, hitPoints, damage, size, texture, false);
+    public Enemy(double cordX, double cordY, double velocity, int maxHitPoints, double damage,
+                 double size, TextureType texture, Entity target) {
+        super(cordX, cordY, velocity, maxHitPoints, damage, size, texture, false, true);
         this.target = target;
     }
 
-    protected boolean isTargetSeen(GameMap map)
-    {
-        Cords targetCords;
-        targetCords = target.getCords();
+    protected boolean isTargetSeen() {
+        double[] targetCords = new double[2];
+        target.getCords(targetCords); // Safely access target
 
-        Cords enemyCords;
-        enemyCords = this.getCords();
+        double[] enemyCords = new double[2];
+        this.getCords(enemyCords);
 
-        boolean visionFl = true;
-        double distance = Utils.calcDistance(enemyCords.getX(), enemyCords.getY(), targetCords.getX(), targetCords.getY());
+        boolean notHit = true;
+        double distance = Helper.calcDistance(enemyCords[0], enemyCords[1], targetCords[0],targetCords[1]);
 
-        viewAngle += Math.atan2((targetCords.getX() - enemyCords.getX()) / distance, ( targetCords.getY() - enemyCords.getY()) / distance);
+        viewAngle += Math.atan2((targetCords[0] - enemyCords[0]) / distance, (targetCords[1] - enemyCords[1]) / distance);
 
-        //движение луча взгляда к игроку
-        while (distance > VISION_STEP && visionFl)
-        {
-            enemyCords.setCords(Utils.interpolateCords(enemyCords.getX(), targetCords.getX(), VISION_STEP, distance), Utils.interpolateCords( enemyCords.getY(), targetCords.getY(), VISION_STEP, distance));
+        while (distance > VISION_STEP && notHit) {
+            enemyCords[0] = Helper.interpolateCords(enemyCords[0], targetCords[0], VISION_STEP, distance);
+            enemyCords[1] = Helper.interpolateCords(enemyCords[1], targetCords[1], VISION_STEP, distance);
 
-            distance = Utils.calcDistance(enemyCords.getX(), enemyCords.getY(), targetCords.getX(), targetCords.getY());
+            distance = Helper.calcDistance(enemyCords[0], enemyCords[1], targetCords[0], targetCords[1]);
 
-            //если луч столкнулся со стеной
-            if (map.isWall(enemyCords.getX(), enemyCords.getY()))
-                visionFl = false;
+            if (GameMap.isWall(enemyCords[0], enemyCords[1])) {
+                notHit = false;
+            }
         }
 
-        return visionFl;
+        return notHit;
     }
 
-    protected double updateAngle()
-    {
-        Cords targetCords;
-        targetCords = target.getCords();
+    public double lookAtTarget() {
+        double distance = 10;
 
-        double deltaX = targetCords.getX() - cordX;
-        double deltaY = targetCords.getY() - cordY;
+        double[] targetCords = new double[2];
+        target.getCords(targetCords); // Safely access target
 
-        double distance = Utils.calcDistance(targetCords.getX(), targetCords.getY(), cordX, cordY);
+        double deltaX = targetCords[0] - cordX;
+        double deltaY = targetCords[1] - cordY;
+
+        distance = Helper.calcDistance(targetCords[0], targetCords[1], cordX, cordY);
         double angleCos = deltaX / distance;
         double angleSin = deltaY / distance;
-        viewAngle = Utils.radToDeg(Math.atan2(angleSin, angleCos));
+        viewAngle = Helper.radToDeg(Math.atan2(angleSin, angleCos));
+
         return distance;
     }
-
 }
