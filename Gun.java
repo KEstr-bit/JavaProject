@@ -18,7 +18,7 @@ abstract class Gun implements AnimationControl {
     protected double velocity;
     protected int ammunition;
     protected int ammoPerShot;
-    protected Timer timer;
+    protected Timer timer = new Timer();
 
     private float frame = 0;
     private Animations animation = Animations.ANIM_SPAWN;

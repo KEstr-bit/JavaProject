@@ -1,114 +1,157 @@
 package DOM;
+import org.jsfml.graphics.Font;
+import org.jsfml.graphics.*;
+import org.jsfml.system.Vector2i;
+import org.jsfml.window.Keyboard;
+import org.jsfml.window.Mouse;
+import org.jsfml.window.event.Event;
+import org.jsfml.system.Clock;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Vector;
+import java.util.ArrayList;
+
+import static DOM.CardinalDirections.*;
 
 
 public class Game {
-    public Player player;             // Игрок
-    public TexturePack texture_pack;     //хранилище текстур
 
-    Vector<Entity> entities = new Vector<Entity>();
+    private Player player;
+    private Entity boss;
+    private RenderEngine drawer;
+    private Clock clock;
+    private List<Entity> entities;
 
-    public Game()
-    {
-        player = new Player(7, 1);
+    public Game() {
+        clock = new Clock();
 
-        try
-        {
-            texture_pack = new TexturePack();
-        }
-        catch (Exception e)
-        {
-            texture_pack = new TexturePack(1);
-        }
+        player = new Player(31, 16);
+        entities = new ArrayList<>();
+        entities.add(player);
+        PhysicsEngine.addEntity(player);
 
-        entities.add(new Necromancer(2, 7, player));
-        entities.add(new Bomber(1, 5, player));
-        entities.add(new Archer(1, 2, player));
-    }
+        boss = new Necromancer(6, 16, player);
+        entities.add(boss);
+        RenderEngine.addEntity(boss);
+        PhysicsEngine.addEntity(boss);
 
-    private void allEntityMovement(GameMap map)
-    {
-        Vector<Entity> newEntities = new Vector<>();
+        // Загрузка шрифта
+        Font font = new Font();
+        try {
+            font.loadFromFile(Paths.get("ComicSansMS.ttf"));
+        } catch (IOException _) {
 
-        // если entity больше не может двигаться
-        // удаляем entity
-        entities.removeIf(entity -> entity.update(map, newEntities));
-
-        player.update(map, newEntities);
-        entities.addAll(newEntities);
-    }
-
-
-    public Entity getEntityByIndex(int index)
-    {
-        return entities.get(index);
-    }
-
-    public void playerShot()
-    {
-        player.shot(entities);
-    }
-
-    public int getCountEntity()
-    {
-        return entities.size();
-    }
-
-    public void interaction(GameMap map) {
-        this.allEntityMovement(map);                        //движение всех лбъектов
-
-        QuadTree<Entity> quadTree = new QuadTree<Entity>(0, 0, 0, GameMap.MAP_SIZE_X, GameMap.MAP_SIZE_Y);
-
-        for (Entity it : entities) {
-            quadTree.insert(it);
         }
 
-        quadTree.insert(player);
+        TexturePack textures = null;
+        try {
+            textures = new TexturePack();
+        } catch (Exception _) {
 
-        for (Entity it : entities) {
-            if (!it.isAlive())
-                continue;
+        }
+        drawer = new RenderEngine(player, textures, font);
 
-            Vector<Entity> potentialCollisions = quadTree.retrieve(it);
+        entities.add(new Bomber(28, 16, player));
+        RenderEngine.addEntity(entities.get(entities.size() - 1));
+        PhysicsEngine.addEntity(entities.get(entities.size() - 1));
+    }
 
-            for (Entity potentialCollision : potentialCollisions) {
+    public void run(RenderWindow window) {
+        double delta = 0;
+        window.setMouseCursorVisible(false);
+        while (window.isOpen()) {
+            eventProcessing(window, delta);
 
-                if (!potentialCollision.isAlive())
-                    continue;
+            delta = clock.getElapsedTime().asMilliseconds();
+            clock.restart();
 
-                if (it == potentialCollision)
-                    continue;
+            drawer.render(window);
+            PhysicsEngine.update(delta);
 
-                if (!it.intersects(potentialCollision, 0.7f))
-                    continue;
+            updateEntities(delta);
 
-                if (it instanceof Bullet b) {
-                    // Безопасное приведение к типу Bullet
-                    if (b.isFriendly() != potentialCollision.isFriendly()) {
-                        potentialCollision.dealDamage(b.getDamage());
-                        b.kill();
-                        break; // Завершить цикл после обработки столкновения
-                    }
-                }
+        }
+        window.setMouseCursorVisible(true);
+    }
 
-                if (it instanceof Enemy e) {
-
-                    Cords collisionCords;
-                    collisionCords = potentialCollision.getCords();
-
-                    Cords enemyCords;
-                    enemyCords = e.getCords();
-
-                    double distance = Helper.calcDistance(enemyCords.getX(), enemyCords.getY(), collisionCords.getX(), collisionCords.getY());
-                    double angle = Helper.radToDeg(Math.acos((enemyCords.getX() - collisionCords.getX()) / distance));
-
-                    if ((enemyCords.getY() - collisionCords.getY()) / distance < 0)
-                        angle *= -1;
-
-                    e.directionStep(map, angle);
-
-                }
+    private void updateEntities(double delta) {
+        entities.removeIf(entity -> {
+            boolean removable = entity.update(delta);
+            if (removable) {
+                player.addScore(100);
             }
+            return removable;
+        });
+    }
+
+    private void eventProcessing(RenderWindow window, double delta) {
+        boolean canShot = true;
+        boolean canReload = true;
+        boolean canChange = true;
+        boolean canMove = true;
+
+        for (Event event: window.pollEvents()){
+            if (event.type == Event.Type.CLOSED) {
+                window.close();
+            }
+
+            if (event.type == Event.Type.MOUSE_BUTTON_PRESSED && event.asMouseButtonEvent().button == Mouse.Button.LEFT) {
+                if (canShot) {
+                    player.shot();
+                    canShot = false;
+                }
+            } else {
+                canShot = true;
+            }
+
+            if (event.type == Event.Type.MOUSE_MOVED) {
+                int x2 = window.getSize().x / 2;
+                int y2 = window.getSize().y / 2;
+
+                Vector2i currentMousePosition = Mouse.getPosition(window);
+                int deltaX = currentMousePosition.x - x2;
+                player.changeVision(deltaX * 0.1);
+                Mouse.setPosition(new Vector2i(x2, y2), window);
+            }
+
+
+            if (canMove) {
+                if (Keyboard.isKeyPressed(Keyboard.Key.W)) {
+                    player.moveTo(delta, NORTH);
+                }
+                if (Keyboard.isKeyPressed(Keyboard.Key.S)) {
+                    player.moveTo(delta, SOUTH);
+                }
+                if (Keyboard.isKeyPressed(Keyboard.Key.A)) {
+                    player.moveTo(delta, WEST);
+                }
+                if (Keyboard.isKeyPressed(Keyboard.Key.D)) {
+                    player.moveTo(delta, EAST);
+                }
+                canMove = false;
+            }
+
+            if (Keyboard.isKeyPressed(Keyboard.Key.LSHIFT)) {
+                if (canReload) {
+                    player.getActiveWeapon().reload();
+                    canReload = false;
+                }
+            } else {
+                canReload = true;
+            }
+
+            if (Keyboard.isKeyPressed(Keyboard.Key.LCONTROL)) {
+                if (canChange) {
+                    player.changeActiveWeapon();
+                    canChange = false;
+                }
+            } else {
+                canChange = true;
+            }
+
+
         }
+
     }
 }

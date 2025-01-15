@@ -8,7 +8,7 @@ abstract public class Entity implements AnimationControl {
     private boolean isFriendly;
     private boolean isPushable;
 
-    protected Timer timer;
+    protected Timer timer = new Timer();
     protected double cordX;
     protected double cordY;
     protected double hitPoints;

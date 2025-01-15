@@ -8,151 +8,129 @@ import org.jsfml.window.VideoMode;
 import org.jsfml.window.event.Event;
 import org.jsfml.system.Vector2i;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static DOM.CardinalDirections.*;
+import static DOM.Constants.SCREEN_HEIGHT;
+import static DOM.Constants.SCREEN_WIDTH;
+import static DOM.GameMap.MAP_SIZE_X;
 
 public class Main {
 
-    public static void main(String[]args){
-        String[] worldMap = new String[GameMap.MAP_SIZE_X];
-        worldMap[0] = "##########";
-        worldMap[1] = "#........#";
-        worldMap[2] = "#........#";
-        worldMap[3] = "#...##...#";
-        worldMap[4] = "#...##...#";
-        worldMap[5] = "#...##...#";
-        worldMap[6] = "#...##...#";
-        worldMap[7] = "#..#..#..#";
-        worldMap[8] = "#........#";
-        worldMap[9] = "##########";
+    public static void main(String[]args) {
 
-        GameMap wMap = new GameMap(worldMap);
-        Drawer dr = new Drawer();
-        Final ending = new Final();
+        int[][] wallMap = new int[MAP_SIZE_X][];
+        wallMap[0] = new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1 };
+        wallMap[1] = new int[]{ 1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1 };
+        wallMap[2] = new int[]{ 1,1,1,1,1,1,1,1,1,1,2,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1 };
+        wallMap[3] = new int[]{ 1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1 };
+        wallMap[4] = new int[]{ 1,1,1,6,6,6,6,6,6,6,1,0,0,0,0,0,0,0,0,0,0,0,1,6,6,6,6,6,6,6,1,1,1 };
+        wallMap[5] = new int[]{ 1,1,1,6,7,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,6,1,1,1 };
+        wallMap[6] = new int[]{ 1,1,1,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,1,1,1 };
+        wallMap[7] = new int[]{ 1,1,1,6,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,6,1,1,1 };
+        wallMap[8] = new int[]{ 1,1,1,6,0,0,0,6,6,6,1,0,0,0,0,0,0,0,0,0,0,0,1,6,6,6,0,0,0,6,1,1,1 };
+        wallMap[9] = new int[]{ 1,1,1,6,0,0,0,6,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,6,0,0,0,6,1,1,1 };
+        wallMap[10] =new int[]{ 1,1,1,6,0,0,0,6,1,1,2,0,0,0,0,0,0,0,0,0,0,0,2,1,0,6,0,0,0,6,1,1,1 };
+        wallMap[11] =new int[]{ 1,1,1,6,0,0,0,6,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,6,0,0,0,6,1,1,1 };
+        wallMap[12] =new int[]{ 1,0,0,6,0,0,0,6,1,1,1,5,2,1,1,1,1,1,1,1,2,1,5,4,1,6,0,0,0,6,1,1,1 };
+        wallMap[13] =new int[]{ 1,0,0,6,0,0,0,6,1,1,4,0,0,0,4,0,0,0,0,4,0,0,0,0,4,6,0,0,0,6,1,1,1 };
+        wallMap[14] =new int[]{ 1,0,0,1,0,0,0,6,1,1,4,0,4,0,4,0,5,5,0,5,4,4,5,0,4,1,0,0,0,1,1,1,1 };
+        wallMap[15] =new int[]{ 1,0,0,1,0,0,0,1,1,1,4,0,4,0,0,0,0,0,0,0,0,0,0,0,4,1,0,0,0,1,0,0,1 };
+        wallMap[16] =new int[]{ 1,1,1,1,0,0,0,1,0,3,1,4,4,4,5,0,5,4,4,4,4,4,5,4,1,1,0,0,0,1,0,0,1 };
+        wallMap[17] =new int[]{ 1,0,0,1,0,0,0,1,0,3,4,0,0,0,0,0,4,0,0,0,0,0,4,1,1,1,0,0,0,1,0,0,1 };
+        wallMap[18] =new int[]{ 1,0,0,1,0,0,0,1,0,3,4,0,0,0,0,0,4,0,0,0,0,0,4,1,1,1,0,0,0,1,0,0,1 };
+        wallMap[19] =new int[]{ 1,0,0,0,0,0,0,0,0,3,4,0,0,0,4,0,0,0,0,0,0,0,4,1,1,1,0,0,0,0,0,0,1 };
+        wallMap[20] =new int[]{ 1,0,0,1,0,0,0,1,0,3,4,0,0,0,4,0,0,0,0,0,0,0,4,1,1,1,0,0,0,1,0,0,1 };
+        wallMap[21] =new int[]{ 1,1,1,1,0,0,0,1,1,2,1,4,5,0,5,4,4,4,5,0,5,4,1,2,1,1,0,0,0,1,1,1,1 };
+        wallMap[22] =new int[]{ 3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3 };
+        wallMap[23] =new int[]{ 3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3 };
+        wallMap[24] =new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,2,1,1,1,1,1,1,1,1,1 };
+        wallMap[25] =new int[]{ 1,1,1,1,1,1,1,1,1,3,0,0,0,1,0,0,0,0,0,1,0,0,0,3,1,1,1,1,1,1,1,1,1 };
+        wallMap[26] =new int[]{ 1,1,1,1,1,1,1,1,1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,1,1,1,1,1,1,1,1 };
+        wallMap[27] =new int[]{ 1,1,1,1,1,1,1,1,1,3,0,0,0,1,0,0,0,0,0,1,0,0,0,3,1,1,1,1,1,1,1,1,1 };
+        wallMap[28] =new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        wallMap[29] =new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        wallMap[30] =new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        wallMap[31] =new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        wallMap[32] =new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+
+        int[][] potMap = new int[MAP_SIZE_X][];
+        potMap[0] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[1] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[2] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[3] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[4] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[5] =  new int[] { 1,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1 };
+        potMap[6] =  new int[] { 1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1 };
+        potMap[7] =  new int[] { 1,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1 };
+        potMap[8] =  new int[] { 1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1 };
+        potMap[9] =  new int[] { 1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1 };
+        potMap[10] = new int[] { 1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1 };
+        potMap[11] = new int[] { 1,1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,1,1 };
+        potMap[12] = new int[] { 1,1,1,1,0,4,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0,0,1,1,1,1 };
+        potMap[13] = new int[] { 1,1,1,1,0,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,0,4,1,1,1,1 };
+        potMap[14] = new int[] { 1,1,1,1,4,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,4,4,1,1,1,1 };
+        potMap[15] = new int[] { 1,1,1,1,4,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,4,4,1,1,1,1 };
+        potMap[16] = new int[] { 1,1,1,1,4,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,4,4,1,1,1,1 };
+        potMap[17] = new int[] { 1,1,1,1,4,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,4,4,1,1,1,1 };
+        potMap[18] = new int[] { 1,1,1,1,4,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,4,4,1,1,1,1 };
+        potMap[19] = new int[] { 1,1,1,1,4,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,4,4,1,1,1,1 };
+        potMap[20] = new int[] { 1,1,1,1,4,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,4,4,1,1,1,1 };
+        potMap[21] = new int[] { 1,1,1,1,4,4,4,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,4,4,4,1,1,1,1 };
+        potMap[22] = new int[] { 1,4,4,4,4,4,4,4,4,4,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,4,4,4,4,4,4,1 };
+        potMap[23] = new int[] { 1,4,4,4,4,4,4,4,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,4,4,4,4,4,4,4,4,1 };
+        potMap[24] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[25] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[26] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[27] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[28] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[29] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[30] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[31] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        potMap[32] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+
+        int[][] floorMap = new int[MAP_SIZE_X][];
+        floorMap[0] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[1] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[2] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[3] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[4] =  new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[5] =  new int[] { 1,1,1,1,3,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,3,3,1,1,1,1 };
+        floorMap[6] =  new int[] { 1,1,1,1,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,3,1,1,1,1 };
+        floorMap[7] =  new int[] { 1,1,1,1,3,3,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,1,1,1,1 };
+        floorMap[8] =  new int[] { 1,1,1,1,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,1,1,1,1 };
+        floorMap[9] =  new int[] { 1,1,1,1,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,1,1,1,1 };
+        floorMap[10] = new int[] { 1,1,1,1,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,1,1,1,1 };
+        floorMap[11] = new int[] { 1,1,1,1,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,1,1,1,1 };
+        floorMap[12] = new int[] { 1,1,1,1,3,3,3,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,3,3,3,1,1,1,1 };
+        floorMap[13] = new int[] { 1,1,1,1,3,3,3,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,3,3,3,1,1,1,1 };
+        floorMap[14] = new int[] { 1,1,1,1,3,3,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,3,3,1,1,1,1 };
+        floorMap[15] = new int[] { 1,1,1,1,1,3,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,3,1,1,1,1 };
+        floorMap[16] = new int[] { 1,1,1,1,1,3,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,3,1,1,1,1 };
+        floorMap[17] = new int[] { 1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1 };
+        floorMap[18] = new int[] { 1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1 };
+        floorMap[19] = new int[] { 1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1 };
+        floorMap[20] = new int[] { 1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1 };
+        floorMap[21] = new int[] { 1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1 };
+        floorMap[22] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[23] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[24] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[25] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[26] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[27] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[28] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[29] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[30] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[31] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+        floorMap[32] = new int[] { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+
+        GameMap.init(wallMap, floorMap, potMap);
+
+        // Создание окна
+        RenderWindow window = new RenderWindow(new VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Главное меню");
+
         Game game = new Game();
-
-        RenderWindow window = new RenderWindow(new VideoMode(Drawer.SCREEN_WIDTH, Drawer.SCREEN_HEIGHT), "Graphic Test");
-
-        window.setSize(new Vector2i(1920, 1080));
-
-        window.setPosition(new Vector2i(320, 180));
-
-        boolean endFl = false;         //флажок работы игры
-        boolean shotFl = true;
-        boolean swapFl = true;
-        boolean reloadingFl = true;
-
-        window.setMouseCursorVisible(false);
-        Mouse.setPosition(new Vector2i(Drawer.SCREEN_WIDTH / 2, Drawer.SCREEN_HEIGHT / 2), window);
-
-        while (window.isOpen()) {
-
-
-            for (Event event: window.pollEvents())
-            {
-                if (event.type == Event.Type.CLOSED)
-                    window.close();
-
-                if (event.type == Event.Type.MOUSE_BUTTON_PRESSED && event.asMouseButtonEvent().button == Mouse.Button.LEFT)
-                {
-                    if (shotFl)
-                    {
-                        game.playerShot();
-
-                        shotFl = false;
-                    }
-                }
-                else
-                    shotFl = true;
-
-
-                if (event.type == Event.Type.MOUSE_MOVED)
-                {
-                    Vector2i currentMousePosition = Mouse.getPosition(window);
-                    int deltaX = currentMousePosition.x - Drawer.SCREEN_WIDTH / 2;
-                    game.player.changeVision(deltaX * 0.1);
-                    Mouse.setPosition(new Vector2i(Drawer.SCREEN_WIDTH / 2, Drawer.SCREEN_HEIGHT / 2), window);
-                }
-
-                if(event.type == Event.Type.KEY_PRESSED && event.asKeyEvent().key == Keyboard.Key.ESCAPE)
-                {
-                    window.close();
-                }
-
-                if (event.type == Event.Type.KEY_PRESSED && event.asKeyEvent().key == Keyboard.Key.LCONTROL)
-                {
-                    if (swapFl)
-                    {
-                        game.player.changeActiveWeapon();
-                        swapFl = false;
-                    }
-                }
-                else
-                    swapFl = true;
-
-                if (event.type == Event.Type.KEY_PRESSED && event.asKeyEvent().key == Keyboard.Key.LSHIFT)
-                {
-                    if (reloadingFl)
-                    {
-                        game.player.getActiveWeapon().reloading();
-                        reloadingFl = false;
-                    }
-                }
-                else
-                    reloadingFl = true;
-
-
-            }
-
-
-            window.clear(new Color(0,0, 0));
-
-            if (!endFl)
-            {
-                //обработка действий игрока
-                if (Keyboard.isKeyPressed(Keyboard.Key.W))
-                {
-                    game.player.playerMapStep(NORTH, wMap);
-                }
-                if (Keyboard.isKeyPressed(Keyboard.Key.S))
-                {
-                    game.player.playerMapStep(SOUTH, wMap);
-                }
-                if (Keyboard.isKeyPressed(Keyboard.Key.D))
-                {
-                    game.player.playerMapStep(EAST, wMap);
-                }
-                if (Keyboard.isKeyPressed(Keyboard.Key.A))
-                {
-                    game.player.playerMapStep(WEST, wMap);
-                }
-
-
-                //взаимодействие объектов
-                game.interaction(wMap);
-
-                //рисование кадра
-                dr.drawWalls(wMap, game, window);
-
-                try
-                {
-                    dr.entityDraw(game, window);
-                }
-                catch (IndexOutOfBoundsException _)
-                {
-                    ending.changeFinal(EndingOption.WinGame);
-                    endFl = true;
-                }
-                catch (IllegalAccessException _) {
-                    ending.changeFinal(EndingOption.LooseGame);
-                    endFl = true;
-                }
-
-                dr.drawPlayerWeapon(game, window);
-            }
-            else
-                ending.outputFinal(window);
-
-            window.display();
-        }
+        game.run(window);
     }
 }

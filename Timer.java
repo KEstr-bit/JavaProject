@@ -23,7 +23,7 @@ public class Timer {
         if (!running) return true;
 
         Instant now = Instant.now();
-        double elapsed = Duration.between(startTime, now).getSeconds();
+        double elapsed = Duration.between(startTime, now).getNano() / 1000000000.0;
 
         if (elapsed >= duration) {
             running = false; // Stop the timer

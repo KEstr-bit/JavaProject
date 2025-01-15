@@ -3,6 +3,8 @@ package DOM;
 import org.jsfml.graphics.*;
 import java.io.IOException;
 
+import static DOM.Constants.SCREEN_HEIGHT;
+import static DOM.Constants.SCREEN_WIDTH;
 import static DOM.EndingOption.WinGame;
 
 public class Final {
@@ -28,7 +30,7 @@ public class Final {
         text.setColor(color);
         FloatRect textRect = text.getLocalBounds();
         text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-        text.setPosition(Drawer.SCREEN_WIDTH / 2.0f, Drawer.SCREEN_HEIGHT / 2.0f);
+        text.setPosition(SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f);
 
         //вывод
         window.draw(text);

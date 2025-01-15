@@ -19,17 +19,24 @@ class GameMap {
         }
     }
 
-    public static void init(List<Integer>[] wallMapInput, List<Integer>[] floorMapInput, List<Integer>[] potMapInput) {
-        for (int i = 0; i < MAP_SIZE_X; i++) {
-            wallMap[i] = new ArrayList<>(wallMapInput[i]);
+    public static void init(int[][] wallMapInput, int[][] floorMapInput, int[][] potMapInput) {
+        if (wallMapInput.length != MAP_SIZE_X || floorMapInput.length != MAP_SIZE_X || potMapInput.length != MAP_SIZE_X) {
+            throw new IllegalArgumentException("Input arrays must have a length of " + MAP_SIZE_X);
         }
 
         for (int i = 0; i < MAP_SIZE_X; i++) {
-            floorMap[i] = new ArrayList<>(floorMapInput[i]);
-        }
-
-        for (int i = 0; i < MAP_SIZE_X; i++) {
-            potMap[i] = new ArrayList<>(potMapInput[i]);
+            for (int j = 0; j < MAP_SIZE_Y; j++) {
+                // Check if there's a valid index for j to prevent ArrayIndexOutOfBoundsException
+                if (j < wallMapInput[i].length) {
+                    wallMap[i].add(wallMapInput[i][j]);
+                }
+                if (j < floorMapInput[i].length) {
+                    floorMap[i].add(floorMapInput[i][j]);
+                }
+                if (j < potMapInput[i].length) {
+                    potMap[i].add(potMapInput[i][j]);
+                }
+            }
         }
     }
 

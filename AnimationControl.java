@@ -3,7 +3,7 @@ package DOM;
 // Интерфейс AnimationControl
 public interface AnimationControl {
     // Константа для скорости кадров
-    float FRAME_SPEED = 0.25f;
+    float FRAME_SPEED = 0.012f;
 
     // Метод для начала анимации
     void startAnimation(Animations animation);
