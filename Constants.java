@@ -1,8 +1,8 @@
 package DOM;
 
 public class Constants {
-    public static final int SCREEN_WIDTH = 640;
-    public static final int SCREEN_HEIGHT = 360;
+    public static final int SCREEN_WIDTH = 1280;
+    public static final int SCREEN_HEIGHT = 720;
     public static final int SCREEN_WIDTH_2 = SCREEN_WIDTH / 2;
     public static final int SCREEN_HEIGHT_2 = SCREEN_HEIGHT / 2;
     public static final double PI = 3.141592653589793238;

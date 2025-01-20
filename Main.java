@@ -1,17 +1,8 @@
 package DOM;
 
-import org.jsfml.graphics.Color;
 import org.jsfml.graphics.RenderWindow;
-import org.jsfml.window.Keyboard;
-import org.jsfml.window.Mouse;
 import org.jsfml.window.VideoMode;
-import org.jsfml.window.event.Event;
-import org.jsfml.system.Vector2i;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static DOM.CardinalDirections.*;
 import static DOM.Constants.SCREEN_HEIGHT;
 import static DOM.Constants.SCREEN_WIDTH;
 import static DOM.GameMap.MAP_SIZE_X;
@@ -128,9 +119,10 @@ public class Main {
         GameMap.init(wallMap, floorMap, potMap);
 
         // Создание окна
-        RenderWindow window = new RenderWindow(new VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Главное меню");
+        RenderWindow window = new RenderWindow(new VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "HAILF");
+        window.setFramerateLimit(60);
 
-        Game game = new Game();
+        MainMenu game = new MainMenu();
         game.run(window);
     }
 }

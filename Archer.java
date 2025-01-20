@@ -1,16 +1,16 @@
 package DOM;
 
-import static DOM.Animations.*;
-import static DOM.TextureType.ARCHER;
-import static DOM.TextureType.FGHYH;
+import static DOM.AnimationControl.Animations.*;
+import static DOM.TexturePack.TextureType.DEMON;
+import static DOM.TexturePack.TextureType.FIRE_CYCLONE;
 
 class Archer extends Enemy {
-    private Rifle rifle;
+    private final Rifle rifle;
     int shift = 90;
 
     public Archer(double coordinateX, double coordinateY, Entity target) {
-        super(coordinateX, coordinateY, 0.01, 100, 50, 1, ARCHER, target);
-        rifle = new Rifle(10, 1, 0.01, 0.035, 10, 50, FGHYH, false);
+        super(coordinateX, coordinateY, 0.01, 100, 50, 1, DEMON, target);
+        rifle = new Rifle(10, 1, 0.01, 0.035, 10, 50, FIRE_CYCLONE, false);
     }
 
     @Override

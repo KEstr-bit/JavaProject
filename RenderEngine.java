@@ -1,7 +1,6 @@
 package DOM;
 
 import org.jsfml.graphics.*;
-import org.jsfml.window.Window;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +8,8 @@ import java.util.List;
 import java.util.Vector;
 
 import static DOM.Constants.*;
-import static DOM.TextureType.*;
+import static DOM.TexturePack.TextureType.*;
+import static org.jsfml.graphics.Color.WHITE;
 
 public class RenderEngine {
     public static final int MAX_RENDER_DISTANCE = 10;
@@ -46,7 +46,7 @@ public class RenderEngine {
         entities.add(entity);
     }
 
-    public void terminate() {
+    public static void terminate() {
         entities.clear();
     }
 
@@ -196,7 +196,7 @@ public class RenderEngine {
             int vertLineNum = (int) (SCREEN_WIDTH_2 * (1 + transformX / transformY));
             float spriteSize = (float) (e.getSize() * SCREEN_HEIGHT / transformY);
 
-            Animations animation;
+            AnimationControl.Animations animation;
             int frame;
             animation = e.getAnimation();
             frame = e.getFrame();
@@ -246,29 +246,32 @@ public class RenderEngine {
     }
 
     private void drawInterface(RenderWindow window) {
-        Animations animation;
+        float sizeX = SCREEN_WIDTH / 10.0f;
+        float sizeY = SCREEN_HEIGHT / 36.0f;
+        float centerY = SCREEN_HEIGHT / 1.04f;
+        float centerXScoreMessage = SCREEN_WIDTH / 18.28f;
+        float centerXHpMessage = SCREEN_WIDTH / 3.72f;
+        float centerXAmmoMessage = SCREEN_WIDTH / 6.09f;
+        float gunX = SCREEN_WIDTH - SCREEN_HEIGHT;
+        float gunY = SCREEN_HEIGHT / 3.0f;
+        float gunSize = SCREEN_HEIGHT / 1.5f;
+
+        AnimationControl.Animations animation;
         int frame;
-        animation = player.getActiveWeapon().getAnimation();
-        frame = player.getActiveWeapon().getFrame();
+        animation = player.getActiveGun().getAnimation();
+        frame = player.getActiveGun().getFrame();
 
-        Drawer.drawImage(window, textures.getTexture(player.getActiveWeapon().getTexture()), SCREEN_WIDTH - SCREEN_HEIGHT, (float) SCREEN_HEIGHT / 3, SCREEN_HEIGHT / 1.5f, SCREEN_HEIGHT / 1.5f, frame * TexturePack.SIZE_ENTITY_TEXT, animation.ordinal() * TexturePack.SIZE_ENTITY_TEXT, TexturePack.SIZE_ENTITY_TEXT, TexturePack.SIZE_ENTITY_TEXT);
+        Drawer.drawImage(window, textures.getTexture(player.getActiveGun().getTexture()), SCREEN_WIDTH - SCREEN_HEIGHT, (float) SCREEN_HEIGHT / 3, SCREEN_HEIGHT / 1.5f, SCREEN_HEIGHT / 1.5f, frame * TexturePack.SIZE_ENTITY_TEXT, animation.ordinal() * TexturePack.SIZE_ENTITY_TEXT, TexturePack.SIZE_ENTITY_TEXT, TexturePack.SIZE_ENTITY_TEXT);
 
-        int hp = player.getPercentHp();
-        int cap = player.getActiveWeapon().getMagazineCapacity();
-        int ammo = player.getActiveWeapon().getAmmo();
-
-        Sprite st = new Sprite();
-        st.setTexture(textures.getTexture(ST));
-        st.setScale((float) SCREEN_WIDTH / SCREEN_WIDTH, (float) SCREEN_HEIGHT / SCREEN_HEIGHT);
-        window.draw(st);
+        Drawer.drawImage(window, textures.getTexture(STATS), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         String b = String.valueOf(player.getScore());
-        String s = hp + "%";
-        String a = ammo + "/" + cap;
+        String s = String.valueOf(player.getPercentHp()) + '%';
+        String a = String.valueOf(player.getActiveGun().getAmmo()) + '/' + String.valueOf(player.getActiveGun().getMagazineCapacity());
+        Drawer.drawMessage(window, b, font, WHITE, centerXScoreMessage, centerY, sizeX, sizeY, 20);
+        Drawer.drawMessage(window, s, font, WHITE, centerXHpMessage, centerY, sizeX, sizeY, 20);
+        Drawer.drawMessage(window, a, font, WHITE, centerXAmmoMessage, centerY, sizeX, sizeY, 20);
 
-        Drawer.drawMessage(window, b, font, Color.WHITE, 35, 345, 50, 10, 20);
-        Drawer.drawMessage(window, s, font, Color.WHITE, 172, 345, 50, 10, 20);
-        Drawer.drawMessage(window, a, font, Color.WHITE, 105, 345, 50, 10, 20);
     }
 
     private void drawFloor(RenderWindow window) {
@@ -279,7 +282,6 @@ public class RenderEngine {
 
             double shading = 10 * (i - SCREEN_HEIGHT / 20.0) / SCREEN_HEIGHT_2;
             if (shading > 1) shading = 1;
-            if (i < SCREEN_HEIGHT / 20.0) shading = 0;
 
             double p = y - (double) SCREEN_HEIGHT / 2;
             double rowDistance = (double) SCREEN_HEIGHT / 2 / p;
@@ -332,7 +334,7 @@ public class RenderEngine {
 
                 int ceilingResult = (byte3) | (byte2 << 8) | (byte1 << 16) | (byte4 << 24);
 
-                for (int k = 0; k < QUALITY && y < SCREEN_HEIGHT; k++) {
+                for (int k = 0; k < QUALITY; k++) {
                     int y1 = y + k;
 
                     pixelData[(y1 * SCREEN_WIDTH + x)] = floorResult; // R

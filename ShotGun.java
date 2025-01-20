@@ -1,16 +1,14 @@
 package DOM;
 
-import java.util.Vector;
-
-import static DOM.Animations.ANIM_ATTACK1;
-import static DOM.TextureType.SHOTGUN;
+import static DOM.AnimationControl.Animations.ANIM_ATTACK1;
+import static DOM.TexturePack.TextureType.SHOTGUN;
 
 public class ShotGun extends Gun {
     private final int maxSpreadAngle;
     private int spreadAngle;
 
     public ShotGun(int magazineCapacity, int ammoPerShot, double velocity, int maxSpreadAngle, double bulletVelocity,
-                   double bulletHP, double bulletDamage, TextureType bulletTexture, boolean isFriendly) {
+                   double bulletHP, double bulletDamage, TexturePack.TextureType bulletTexture, boolean isFriendly) {
         super(magazineCapacity, ammoPerShot, velocity, bulletVelocity, bulletHP, bulletDamage, isFriendly, SHOTGUN, bulletTexture);
         this.maxSpreadAngle = maxSpreadAngle;
         this.spreadAngle = maxSpreadAngle;
@@ -45,8 +43,8 @@ public class ShotGun extends Gun {
 
             // Initialization of a new bullet
             bullets.add(new Bullet(x, y, shotAngle, bulletVelocity, (int) bulletHP, bulletDamage, bulletTexture, isFriendly()));
-            PhysicsEngine.addEntity(bullets.get(bullets.size() - 1));
-            RenderEngine.addEntity(bullets.get(bullets.size() - 1));
+            PhysicsEngine.addEntity(bullets.getLast());
+            RenderEngine.addEntity(bullets.getLast());
 
             shotAngle += angleShift;
         }

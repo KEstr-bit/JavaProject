@@ -3,14 +3,14 @@ package DOM;
 import java.util.ArrayList;
 import java.util.List;
 
-import static DOM.Animations.*;
-import static DOM.TextureType.NECROMANCER;
-import static DOM.TextureType.SKULL;
+import static DOM.AnimationControl.Animations.*;
+import static DOM.TexturePack.TextureType.NECROMANCER;
+import static DOM.TexturePack.TextureType.SKULL;
 
 class Necromancer extends Enemy {
 
-    private ShotGun shotGun;
-    private List<Entity> entities;
+    private final ShotGun shotGun;
+    private final List<Entity> entities;
 
     public Necromancer(double coordinateX, double coordinateY, Entity target) {
         super(coordinateX, coordinateY, 0.01, 2000, 50, 2, NECROMANCER, target);
@@ -75,9 +75,7 @@ class Necromancer extends Enemy {
         } else if (animation == ANIM_BASE) {
             isVisible = false;
 
-            if (shotGun.hasNotBullets() && entities.isEmpty()) {
-                return true;
-            }
+            return shotGun.hasNotBullets() && entities.isEmpty();
         }
 
         return false;
@@ -97,8 +95,8 @@ class Necromancer extends Enemy {
                 } else {
                     entities.add(new Archer(x, y, target));
                 }
-                PhysicsEngine.addEntity(entities.get(entities.size() - 1));
-                RenderEngine.addEntity(entities.get(entities.size() - 1));
+                PhysicsEngine.addEntity(entities.getLast());
+                RenderEngine.addEntity(entities.getLast());
             }
         }
     }

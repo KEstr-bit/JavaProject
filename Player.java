@@ -1,35 +1,43 @@
 package DOM;
 
-import static DOM.TextureType.BULLET;
-import static DOM.TextureType.NECROMANCER;
+import static DOM.TexturePack.TextureType.BULLET;
+import static DOM.TexturePack.TextureType.NECROMANCER;
 
 class Player extends Entity {
-    private GunOption activeWeapon;             // активное оружие
-    private ShotGun firstGun;                    // оружие игрока1
-    private Rifle secondGun;                     // оружие игрока2
+    public enum ActiveGun {
+        FIRST, SECOND
+    }
+
+    public enum Directions {
+        NORTH, EAST, SOUTH, WEST
+    }
+
+
+    private ActiveGun activeGun;             // активное оружие
+    private final ShotGun firstGun;                    // оружие игрока1
+    private final Rifle secondGun;                     // оружие игрока2
     private int percentHp = 100;
     private int score = 0;
     private int fov = 80;                        // ширина обзора
 
     public Player(double cordX, double cordY) {
         super(cordX, cordY, 0.03, 300, 50, 0.5, NECROMANCER, true, true);
-        activeWeapon = GunOption.GUN_SHOTGUN;
+        activeGun = ActiveGun.FIRST;
         firstGun = new ShotGun(10, 3, 0.01, 30, 0.035, 100, 50, BULLET, true);
         secondGun = new Rifle(10, 1, 0.005, 0.035, 70, 200, BULLET, true);
     }
 
 
-    public Gun getActiveWeapon() {
-        switch (activeWeapon) {
-            case GUN_SHOTGUN: return firstGun;
-            case GUN_RIFLE: return secondGun;
-        }
-        return null;
+    public Gun getActiveGun() {
+        return switch (activeGun) {
+            case FIRST -> firstGun;
+            case SECOND -> secondGun;
+        };
     }
 
-    public void moveTo(double delta, CardinalDirections stepDirection) { // перемщение игрока
+    public void moveTo(double delta, Directions stepDirection) { // перемщение игрока
         if (timer.check()) {
-            getActiveWeapon().startAnimation(Animations.ANIM_MOVE);
+            getActiveGun().startAnimation(Animations.ANIM_MOVE);
         }
         double oldAngle = viewAngle;
 
@@ -48,26 +56,19 @@ class Player extends Entity {
     }
 
     public void changeActiveWeapon() {
-        switch (activeWeapon) {
-            case GUN_SHOTGUN:
-                activeWeapon = GunOption.GUN_RIFLE;
+        switch (activeGun) {
+            case FIRST:
+                activeGun = ActiveGun.SECOND;
                 break;
-            case GUN_RIFLE:
-                activeWeapon = GunOption.GUN_SHOTGUN;
+            case SECOND:
+                activeGun = ActiveGun.FIRST;
                 break;
         }
-        getActiveWeapon().startAnimation(Animations.ANIM_SPAWN);
+        getActiveGun().startAnimation(Animations.ANIM_SPAWN);
     }
 
     public void shot() {
-        switch (activeWeapon) {
-            case GUN_SHOTGUN:
-                firstGun.shot(cordX, cordY, viewAngle);
-                break;
-            case GUN_RIFLE:
-                secondGun.shot(cordX, cordY, viewAngle);
-                break;
-        }
+        getActiveGun().shot(cordX, cordY, viewAngle);
     }
 
     public void addScore(int score) {

@@ -2,11 +2,11 @@ package DOM;
 
 
 abstract public class Entity implements AnimationControl {
-    private TextureType texture;
-    private double size;
-    private int maxHealthPoints;
-    private boolean isFriendly;
-    private boolean isPushable;
+    private final TexturePack.TextureType texture;
+    private final double size;
+    private final int maxHealthPoints;
+    private final boolean isFriendly;
+    private final boolean isPushable;
 
     protected Timer timer = new Timer();
     protected double cordX;
@@ -21,7 +21,7 @@ abstract public class Entity implements AnimationControl {
     protected Animations animation = Animations.ANIM_SPAWN;
 
     public Entity(double cordX, double cordY, double velocity, int maxHealthPoints,
-                  double damage, double size, TextureType texture, boolean isFriendly, boolean isPushable) {
+                  double damage, double size, TexturePack.TextureType texture, boolean isFriendly, boolean isPushable) {
         this.texture = texture;
         this.size = size;
         this.maxHealthPoints = maxHealthPoints;
@@ -77,7 +77,7 @@ abstract public class Entity implements AnimationControl {
         return maxHealthPoints;
     }
 
-    public TextureType getTexture() {
+    public TexturePack.TextureType getTexture() {
         return texture;
     }
 

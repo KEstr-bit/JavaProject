@@ -1,14 +1,12 @@
 package DOM;
 import java.util.Vector;
 
-import static DOM.Animations.ANIM_ATTACK1;
-import static DOM.TextureType.RIFLE;
-
-import java.util.ArrayList;
+import static DOM.AnimationControl.Animations.ANIM_ATTACK1;
+import static DOM.TexturePack.TextureType.RIFLE;
 
 class Rifle extends Gun {
     public Rifle(int magazineCapacity, int ammoPerShot, double velocity, double bulletVelocity, double bulletHP,
-                 double bulletDamage, TextureType bulletTexture, boolean friendly) {
+                 double bulletDamage, TexturePack.TextureType bulletTexture, boolean friendly) {
         super(magazineCapacity, ammoPerShot, velocity, bulletVelocity, bulletHP, bulletDamage, friendly, RIFLE, bulletTexture);
     }
 
@@ -40,8 +38,8 @@ class Rifle extends Gun {
 
             // Initialize new bullet
             bullets.add(new Bullet(x, y, shotAngle, bulletVelocity, (int) bulletHP, bulletDamage, bulletTexture, isFriendly()));
-            PhysicsEngine.addEntity(bullets.get(bullets.size() - 1));
-            RenderEngine.addEntity(bullets.get(bullets.size() - 1));
+            PhysicsEngine.addEntity(bullets.getLast());
+            RenderEngine.addEntity(bullets.getLast());
         }
         return true;
     }

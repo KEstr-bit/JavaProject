@@ -5,7 +5,7 @@ abstract class Enemy extends Entity {
     private static final double VISION_STEP = 0.2;
 
     public Enemy(double cordX, double cordY, double velocity, int maxHitPoints, double damage,
-                 double size, TextureType texture, Entity target) {
+                 double size, TexturePack.TextureType texture, Entity target) {
         super(cordX, cordY, velocity, maxHitPoints, damage, size, texture, false, true);
         this.target = target;
     }

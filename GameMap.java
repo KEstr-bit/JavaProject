@@ -7,9 +7,9 @@ class GameMap {
     static final int MAP_SIZE_X = 33;
     static final int MAP_SIZE_Y = 33;
 
-    private static List<Integer>[] wallMap = new ArrayList[MAP_SIZE_X];
-    private static List<Integer>[] floorMap = new ArrayList[MAP_SIZE_X];
-    private static List<Integer>[] potMap = new ArrayList[MAP_SIZE_X];
+    private static final List<Integer>[] wallMap = new ArrayList[MAP_SIZE_X];
+    private static final List<Integer>[] floorMap = new ArrayList[MAP_SIZE_X];
+    private static final List<Integer>[] potMap = new ArrayList[MAP_SIZE_X];
 
     static {
         for (int i = 0; i < MAP_SIZE_X; i++) {

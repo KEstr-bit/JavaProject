@@ -1,15 +1,13 @@
 package DOM;
 
-import java.util.Vector;
-
-import static DOM.Animations.*;
-import static DOM.TextureType.ENEMY;
+import static DOM.AnimationControl.Animations.*;
+import static DOM.TexturePack.TextureType.SLIME;
 
 class Bomber extends Enemy {
     private boolean exploded = false;
 
     public Bomber(double coordinateX, double coordinateY, Entity target) {
-        super(coordinateX, coordinateY, 0.03, 50, 100, 1, ENEMY, target);
+        super(coordinateX, coordinateY, 0.03, 50, 100, 1, SLIME, target);
     }
 
     @Override

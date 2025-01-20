@@ -3,11 +3,23 @@ package DOM;
 import org.jsfml.graphics.Image;
 import org.jsfml.graphics.Texture;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 class TexturePack {
+    public enum TextureType {
+        SLIME,
+        DEMON,
+        NECROMANCER,
+        RIFLE,
+        SHOTGUN,
+        FIRE_CYCLONE,
+        SKULL,
+        BULLET,
+        SKY,
+        FLOORS,
+        WALLS,
+        STATS
+    }
+
     public static final int SIZE_WALL_TEXT = 128;
     public static final int SIZE_ENTITY_TEXT = 128;
     public static final int SIZE_FLOOR_TEXT = 64;

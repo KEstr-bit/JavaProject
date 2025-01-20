@@ -5,12 +5,12 @@ import java.util.List;
 abstract class Gun implements AnimationControl {
     public static final double SIDE_SHIFT = 0.5;
 
-    private TextureType texture;
-    private int magazineCapacity;
-    private boolean friendly;
+    private final TexturePack.TextureType texture;
+    private final int magazineCapacity;
+    private final boolean friendly;
 
     protected List<Entity> bullets;
-    protected TextureType bulletTexture;
+    protected TexturePack.TextureType bulletTexture;
     protected double bulletVelocity;
     protected double bulletDamage;
     protected double bulletHP;
@@ -24,7 +24,7 @@ abstract class Gun implements AnimationControl {
     private Animations animation = Animations.ANIM_SPAWN;
 
     public Gun(int magazineCapacity, int ammoPerShot, double velocity, double bulletVelocity, double bulletHP,
-               double bulletDamage, boolean friendly, TextureType texture, TextureType bulletTexture) {
+               double bulletDamage, boolean friendly, TexturePack.TextureType texture, TexturePack.TextureType bulletTexture) {
         this.bulletHP = bulletHP;
         this.magazineCapacity = magazineCapacity;
         this.ammoPerShot = ammoPerShot;
@@ -46,7 +46,7 @@ abstract class Gun implements AnimationControl {
         return bullets.isEmpty();
     }
 
-    public TextureType getTexture() {
+    public TexturePack.TextureType getTexture() {
         return texture;
     }
 

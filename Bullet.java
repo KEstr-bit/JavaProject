@@ -1,13 +1,10 @@
 package DOM;
 
-import java.util.Vector;
-
-import static DOM.TextureType.BULLET;
 
 class Bullet extends Entity {
 
     public Bullet(double cordX, double cordY, double flightAngle, double speed,
-                  int maxHitPoints, double damage, TextureType texture, boolean friendly) {
+                  int maxHitPoints, double damage, TexturePack.TextureType texture, boolean friendly) {
         super(cordX, cordY, speed, maxHitPoints, damage, 0.5, texture, friendly, false);
         this.viewAngle = flightAngle;
         this.timer.start(0);

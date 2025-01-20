@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PhysicsEngine {
-    private static List<Entity> entities = new ArrayList<>();
+    private static final List<Entity> entities = new ArrayList<>();
 
     // Prevent instantiation and copying
     private PhysicsEngine() { }

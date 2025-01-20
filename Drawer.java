@@ -1,10 +1,6 @@
 package DOM;
 import org.jsfml.graphics.*;
 
-import java.util.Vector;
-
-import static DOM.TextureType.WALLS;
-
 public class Drawer {
 
     public static void drawMessage(RenderWindow window, String message, Font font, Color color,
@@ -28,6 +24,11 @@ public class Drawer {
 
         // Draw the text on the window
         window.draw(text);
+    }
+
+    public static void drawMessage(RenderWindow window, String message, Font font, Color color,
+                                   float centerX, float centerY, float sizeX, float sizeY) {
+        drawMessage(window,  message,font, color, centerX, centerY, sizeX, sizeY, 70);
     }
 
     public static void drawImage(RenderWindow window, Texture texture, float x, float y,
